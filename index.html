@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetpack Adventure</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #87CEEB;
+        }
+        #player {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background-color: #FF5733;
+            border-radius: 5px;
+            left: 100px;
+            transition: transform 0.1s;
+        }
+        .jetpack-flame {
+            position: absolute;
+            width: 20px;
+            height: 30px;
+            background-color: #FFC300;
+            border-radius: 50% 50% 0 0;
+            left: -10px;
+            top: 20px;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        .obstacle {
+            position: absolute;
+            background-color: #900C3F;
+            border-radius: 5px;
+        }
+        .coin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: gold;
+            border-radius: 50%;
+        }
+        .powerup {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+        }
+        .speed-boost {
+            background-color: #39FF14;
+        }
+        .shield {
+            background-color: #3498DB;
+        }
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            background-color: #8B4513;
+        }
+        .ceiling {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #696969;
+        }
+        #score-display {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+        }
+        #restart-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #FF5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #powerup-indicator {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player">
+            <div class="jetpack-flame"></div>
+        </div>
+        <div class="ground"></div>
+        <div class="ceiling"></div>
+        <div id="score-display">Score: 0</div>
+        <div id="powerup-indicator"></div>
+        <div id="game-over">
+            <h2>Game Over</h2>
+            <p id="final-score">Your Score: 0</p>
+            <button id="restart-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game elements
+            const gameContainer = document.getElementById('game-container');
+            const player = document.getElementById('player');
+            const jetpackFlame = document.querySelector('.jetpack-flame');
+            const scoreDisplay = document.getElementById('score-display');
+            const gameOverScreen = document.getElementById('game-over');
+            const finalScoreDisplay = document.getElementById('final-score');
+            const restartBtn = document.getElementById('restart-btn');
+            const powerupIndicator = document.getElementById('powerup-indicator');
+            
+            // Game state
+            let isJetpackActive = false;
+            let playerY = gameContainer.clientHeight / 2;
+            let playerVelocity = 0;
+            let gravity = 0.5;
+            let jetpackForce = 0.8;
+            let gameSpeed = 5;
+            let baseGameSpeed = 5;
+            let score = 0;
+            let obstacles = [];
+            let coins = [];
+            let powerups = [];
+            let gameOver = false;
+            let animationFrameId = null;
+            
+            // Player state
+            let hasShield = false;
+            let shieldTimeLeft = 0;
+            let speedBoostTimeLeft = 0;
+            
+            // Game dimensions
+            const playerHeight = 60;
+            const playerWidth = 40;
+            const groundHeight = 50;
+            const ceilingHeight = 20;
+            
+            // Initialize player position
+            player.style.bottom = `${groundHeight + 10}px`;
+            
+            // Event listeners
+            document.addEventListener('mousedown', activateJetpack);
+            document.addEventListener('mouseup', deactivateJetpack);
+            document.addEventListener('touchstart', activateJetpack);
+            document.addEventListener('touchend', deactivateJetpack);
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') activateJetpack(e);
+            });
+            document.addEventListener('keyup', function(e) {
+                if (e.code === 'Space') deactivateJetpack(e);
+            });
+            
+            restartBtn.addEventListener('click', restartGame);
+            
+            // Game functions
+            function activateJetpack(e) {
+                e.preventDefault();
+                if (!gameOver) {
+                    isJetpackActive = true;
+                    jetpackFlame.style.opacity = '1';
+                }
+            }
+            
+            function deactivateJetpack(e) {
+                e.preventDefault();
+                isJetpackActive = false;
+                jetpackFlame.style.opacity = '0';
+            }
+            
+            function updatePlayerPosition() {
+                if (isJetpackActive) {
+                    playerVelocity += jetpackForce;
+                }
+                
+                playerVelocity -= gravity;
+                playerY += playerVelocity;
+                
+                // Boundary checks
+                const maxY = gameContainer.clientHeight - playerHeight - groundHeight;
+                const minY = ceilingHeight;
+                
+                if (playerY > maxY) {
+                    playerY = maxY;
+                    playerVelocity = 0;
+                }
+                
+                if (playerY < minY) {
+                    playerY = minY;
+                    playerVelocity = 0;
+                }
+                
+                player.style.bottom = `${playerY}px`;
+            }
+            
+            function createObstacle() {
+                if (Math.random() < 0.03) {
+                    const obstacle = document.createElement('div');
+                    obstacle.className = 'obstacle';
+                    
+                    // Randomize obstacle size and position
+                    const height = Math.floor(Math.random() * 150) + 50;
+                    const width = Math.floor(Math.random() * 30) + 20;
+                    const bottom = Math.random() < 0.5 ? 
+                                 groundHeight : // Bottom obstacle
+                                 gameContainer.clientHeight - height - groundHeight; // Top obstacle
+                    
+                    obstacle.style.height = `${height}px`;
+                    obstacle.style.width = `${width}px`;
+                    obstacle.style.bottom = `${bottom}px`;
+                    obstacle.style.left = `${gameContainer.clientWidth}px`;
+                    
+                    gameContainer.appendChild(obstacle);
+                    obstacles.push({
+                        element: obstacle,
+                        position: gameContainer.clientWidth,
+                        width: width,
+                        height: height,
+                        bottom: bottom
+                    });
+                }
+            }
+            
+            function createCoin() {
+                if (Math.random() < 0.05) {
+                    const coin = document.createElement('div');
+                    coin.className = 'coin';
+                    
+                    const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                    
+                    coin.style.bottom = `${bottom}px`;
+                    coin.style.left = `${gameContainer.clientWidth}px`;
+                    
+                    gameContainer.appendChild(coin);
+                    coins.push({
+                        element: coin,
+                        position: gameContainer.clientWidth,
+                        bottom: bottom
+                    });
+                }
+            }
+            
+            function createPowerup() {
+                if (Math.random() < 0.01) {
+                    const powerup = document.createElement('div');
+                    powerup.className = 'powerup';
+                    
+                    // Randomly choose between speed boost and shield
+                    const type = Math.random() < 0.5 ? 'speed-boost' : 'shield';
+                    powerup.classList.add(type);
+                    
+                    const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 30)) + groundHeight;
+                    
+                    powerup.style.bottom = `${bottom}px`;
+                    powerup.style.left = `${gameContainer.clientWidth}px`;
+                    
+                    gameContainer.appendChild(powerup);
+                    powerups.push({
+                        element: powerup,
+                        position: gameContainer.clientWidth,
+                        bottom: bottom,
+                        type: type
+                    });
+                }
+            }
+            
+            function moveObstacles() {
+                for (let i = 0; i < obstacles.length; i++) {
+                    obstacles[i].position -= gameSpeed;
+                    obstacles[i].element.style.left = `${obstacles[i].position}px`;
+                    
+                    // Remove obstacles that have gone off-screen
+                    if (obstacles[i].position + obstacles[i].width < 0) {
+                        gameContainer.removeChild(obstacles[i].element);
+                        obstacles.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+            
+            function moveCoins() {
+                for (let i = 0; i < coins.length; i++) {
+                    coins[i].position -= gameSpeed;
+                    coins[i].element.style.left = `${coins[i].position}px`;
+                    
+                    // Remove coins that have gone off-screen
+                    if (coins[i].position < 0) {
+                        gameContainer.removeChild(coins[i].element);
+                        coins.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+            
+            function movePowerups() {
+                for (let i = 0; i < powerups.length; i++) {
+                    powerups[i].position -= gameSpeed;
+                    powerups[i].element.style.left = `${powerups[i].position}px`;
+                    
+                    // Remove powerups that have gone off-screen
+                    if (powerups[i].position < 0) {
+                        gameContainer.removeChild(powerups[i].element);
+                        powerups.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+            
+            function checkCollisions() {
+                const playerLeft = 100;
+                const playerRight = playerLeft + playerWidth;
+                const playerTop = gameContainer.clientHeight - playerY - playerHeight;
+                const playerBottom = gameContainer.clientHeight - playerY;
+                
+                // Check obstacle collisions
+                for (let i = 0; i < obstacles.length; i++) {
+                    const obsLeft = obstacles[i].position;
+                    const obsRight = obsLeft + obstacles[i].width;
+                    const obsTop = gameContainer.clientHeight - obstacles[i].bottom - obstacles[i].height;
+                    const obsBottom = gameContainer.clientHeight - obstacles[i].bottom;
+                    
+                    if (playerRight > obsLeft && playerLeft < obsRight &&
+                        playerBottom > obsTop && playerTop < obsBottom) {
+                        
+                        if (hasShield) {
+                            // Shield protects from one collision
+                            hasShield = false;
+                            shieldTimeLeft = 0;
+                            updatePowerupIndicator();
+                            
+                            // Remove the obstacle
+                            gameContainer.removeChild(obstacles[i].element);
+                            obstacles.splice(i, 1);
+                        } else {
+                            endGame();
+                        }
+                        break;
+                    }
+                }
+                
+                // Check coin collisions
+                for (let i = 0; i < coins.length; i++) {
+                    const coinLeft = coins[i].position;
+                    const coinRight = coinLeft + 20;
+                    const coinTop = gameContainer.clientHeight - coins[i].bottom - 20;
+                    const coinBottom = gameContainer.clientHeight - coins[i].bottom;
+                    
+                    if (playerRight > coinLeft && playerLeft < coinRight &&
+                        playerBottom > coinTop && playerTop < coinBottom) {
+                        
+                        // Collect coin
+                        gameContainer.removeChild(coins[i].element);
+                        coins.splice(i, 1);
+                        score += 10;
+                        scoreDisplay.textContent = `Score: ${score}`;
+                        i--;
+                    }
+                }
+                
+                // Check powerup collisions
+                for (let i = 0; i < powerups.length; i++) {
+                    const powerupLeft = powerups[i].position;
+                    const powerupRight = powerupLeft + 30;
+                    const powerupTop = gameContainer.clientHeight - powerups[i].bottom - 30;
+                    const powerupBottom = gameContainer.clientHeight - powerups[i].bottom;
+                    
+                    if (playerRight > powerupLeft && playerLeft < powerupRight &&
+                        playerBottom > powerupTop && playerTop < powerupBottom) {
+                        
+                        // Apply powerup
+                        if (powerups[i].type === 'speed-boost') {
+                            gameSpeed = baseGameSpeed * 1.5;
+                            speedBoostTimeLeft = 5 * 60; // 5 seconds at 60fps
+                        } else if (powerups[i].type === 'shield') {
+                            hasShield = true;
+                            shieldTimeLeft = 10 * 60; // 10 seconds at 60fps
+                        }
+                        
+                        gameContainer.removeChild(powerups[i].element);
+                        powerups.splice(i, 1);
+                        updatePowerupIndicator();
+                        i--;
+                    }
+                }
+            }
+            
+            function updatePowerupStatus() {
+                if (speedBoostTimeLeft > 0) {
+                    speedBoostTimeLeft--;
+                    if (speedBoostTimeLeft === 0) {
+                        gameSpeed = baseGameSpeed;
+                    }
+                }
+                
+                if (shieldTimeLeft > 0) {
+                    shieldTimeLeft--;
+                    if (shieldTimeLeft === 0) {
+                        hasShield = false;
+                    }
+                }
+                
+                updatePowerupIndicator();
+            }
+            
+            function updatePowerupIndicator() {
+                let indicatorText = '';
+                
+                if (hasShield) {
+                    indicatorText += `Shield: ${Math.ceil(shieldTimeLeft / 60)}s `;
+                }
+                
+                if (speedBoostTimeLeft > 0) {
+                    indicatorText += `Speed Boost: ${Math.ceil(speedBoostTimeLeft / 60)}s`;
+                }
+                
+                powerupIndicator.textContent = indicatorText;
+            }
+            
+            function updateScore() {
+                score++;
+                if (score % 1000 === 0) {
+                    baseGameSpeed += 1;
+                    if (!speedBoostTimeLeft) {
+                        gameSpeed = baseGameSpeed;
+                    }
+                }
+                scoreDisplay.textContent = `Score: ${score}`;
+            }
+            
+            function endGame() {
+                gameOver = true;
+                finalScoreDisplay.textContent = `Your Score: ${score}`;
+                gameOverScreen.style.display = 'block';
+                
+                // Clean up event listeners
+                document.removeEventListener('mousedown', activateJetpack);
+                document.removeEventListener('mouseup', deactivateJetpack);
+                document.removeEventListener('touchstart', activateJetpack);
+                document.removeEventListener('touchend', deactivateJetpack);
+                
+                cancelAnimationFrame(animationFrameId);
+            }
+            
+            function restartGame() {
+                // Clear all elements
+                while (obstacles.length > 0) {
+                    gameContainer.removeChild(obstacles[0].element);
+                    obstacles.shift();
+                }
+                
+                while (coins.length > 0) {
+                    gameContainer.removeChild(coins[0].element);
+                    coins.shift();
+                }
+                
+                while (powerups.length > 0) {
+                    gameContainer.removeChild(powerups[0].element);
+                    powerups.shift();
+                }
+                
+                // Reset game state
+                isJetpackActive = false;
+                playerY = gameContainer.clientHeight / 2;
+                playerVelocity = 0;
+                gameSpeed = 5;
+                baseGameSpeed = 5;
+                score = 0;
+                gameOver = false;
+                hasShield = false;
+                shieldTimeLeft = 0;
+                speedBoostTimeLeft = 0;
+                
+                // Reset UI
+                scoreDisplay.textContent = 'Score: 0';
+                powerupIndicator.textContent = '';
+                gameOverScreen.style.display = 'none';
+                jetpackFlame.style.opacity = '0';
+                
+                // Add back event listeners
+                document.addEventListener('mousedown', activateJetpack);
+                document.addEventListener('mouseup', deactivateJetpack);
+                document.addEventListener('touchstart', activateJetpack);
+                document.addEventListener('touchend', deactivateJetpack);
+                
+                // Start game loop
+                gameLoop();
+            }
+            
+            function gameLoop() {
+                if (!gameOver) {
+                    updatePlayerPosition();
+                    createObstacle();
+                    createCoin();
+                    createPowerup();
+                    moveObstacles();
+                    moveCoins();
+                    movePowerups();
+                    checkCollisions();
+                    updatePowerupStatus();
+                    updateScore();
+                    
+                    animationFrameId = requestAnimationFrame(gameLoop);
+                }
+            }
+            
+            // Start the game
+            gameLoop();
+        });
+    </script>
+</body>
+</html>
