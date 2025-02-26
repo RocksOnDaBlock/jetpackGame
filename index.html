@@ -10,6 +10,10 @@
             overflow: hidden;
             font-family: 'Arial', sans-serif;
             background-color: #222;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+            touch-action: manipulation;
         }
         #game-container {
             position: relative;
@@ -24,6 +28,7 @@
             height: 70px;
             left: 100px;
             transition: transform 0.1s;
+            z-index: 50;
         }
         .player-body {
             position: absolute;
@@ -124,6 +129,7 @@
             height: 50px;
             background-color: #8B4513;
             background-image: linear-gradient(to bottom, #8B4513, #654321);
+            z-index: 40;
         }
         .ceiling {
             position: absolute;
@@ -131,6 +137,7 @@
             width: 100%;
             height: 20px;
             background-color: #696969;
+            z-index: 40;
         }
         #score-display {
             position: absolute;
@@ -178,6 +185,46 @@
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
+        #level-indicator {
+            position: absolute;
+            top: 110px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        #level-progress {
+            position: absolute;
+            top: 140px;
+            left: 20px;
+            width: 150px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            z-index: 100;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #FF5733;
+            transition: width 0.3s;
+        }
+        #level-complete {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 150;
+            animation: fadeInOut 3s forwards;
+        }
         #title-screen {
             position: absolute;
             top: 0;
@@ -201,7 +248,7 @@
         #high-score {
             font-size: 24px;
             color: gold;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
         #customization {
@@ -244,11 +291,65 @@
             transform: scale(1.05);
             background-color: #FF7043;
         }
+        #level-selection {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            width: 80%;
+            max-width: 400px;
+            color: white;
+            text-align: center;
+        }
+        #level-selection h2 {
+            margin-top: 0;
+        }
+        .level-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .level-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #3498DB;
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .level-btn:hover {
+            transform: scale(1.1);
+        }
+        .level-btn.locked {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+        }
+        .level-btn.completed {
+            background-color: #2ecc71;
+        }
+        .background-element {
+            position: absolute;
+            z-index: 10;
+        }
+        .cloud {
+            background-color: white;
+            border-radius: 50px;
+            opacity: 0.8;
+        }
+        .mountain {
+            background: linear-gradient(to bottom, #8B4513, #654321);
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+        }
         @media (max-width: 768px) {
             #title {
                 font-size: 36px;
             }
-            #customization {
+            #customization, #level-selection {
                 width: 90%;
             }
         }
@@ -271,6 +372,13 @@
         <div class="ceiling"></div>
         <div id="score-display">Score: 0</div>
         <div id="powerup-indicator"></div>
+        <div id="level-indicator">Level: 1</div>
+        <div id="level-progress">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="level-complete">
+            <h2>Level Complete!</h2>
+        </div>
         <div id="game-over">
             <h2>Game Over</h2>
             <p id="final-score">Your Score: 0</p>
@@ -283,6 +391,13 @@
     <div id="title-screen">
         <h1 id="title">JETPACK ADVENTURE</h1>
         <div id="high-score">High Score: 0</div>
+        
+        <div id="level-selection">
+            <h2>Select Level</h2>
+            <div class="level-buttons" id="level-buttons-container">
+                <!-- Level buttons will be generated here -->
+            </div>
+        </div>
         
         <div id="customization">
             <h2>Customize Character</h2>
@@ -320,9 +435,13 @@
             const restartBtn = document.getElementById('restart-btn');
             const menuBtn = document.getElementById('menu-btn');
             const powerupIndicator = document.getElementById('powerup-indicator');
+            const levelIndicator = document.getElementById('level-indicator');
+            const progressBar = document.getElementById('progress-bar');
+            const levelCompleteMessage = document.getElementById('level-complete');
             const titleScreen = document.getElementById('title-screen');
             const highScoreDisplay = document.getElementById('high-score');
             const startGameBtn = document.getElementById('start-game-btn');
+            const levelButtonsContainer = document.getElementById('level-buttons-container');
             
             // Character customization elements
             const bodyColorInput = document.getElementById('body-color');
@@ -339,16 +458,51 @@
                 document.querySelector('.player-leg.left').style.backgroundColor = pantsColorInput.value;
                 document.querySelector('.player-leg.right').style.backgroundColor = pantsColorInput.value;
                 document.querySelector('.jetpack').style.backgroundColor = jetpackColorInput.value;
+                
+                // Save colors to localStorage
+                localStorage.setItem('bodyColor', bodyColorInput.value);
+                localStorage.setItem('skinColor', skinColorInput.value);
+                localStorage.setItem('pantsColor', pantsColorInput.value);
+                localStorage.setItem('jetpackColor', jetpackColorInput.value);
             }
             
-            // Apply initial colors
-            applyCharacterColors();
+            // Load saved colors
+            function loadSavedColors() {
+                const savedBodyColor = localStorage.getItem('bodyColor');
+                const savedSkinColor = localStorage.getItem('skinColor');
+                const savedPantsColor = localStorage.getItem('pantsColor');
+                const savedJetpackColor = localStorage.getItem('jetpackColor');
+                
+                if (savedBodyColor) bodyColorInput.value = savedBodyColor;
+                if (savedSkinColor) skinColorInput.value = savedSkinColor;
+                if (savedPantsColor) pantsColorInput.value = savedPantsColor;
+                if (savedJetpackColor) jetpackColorInput.value = savedJetpackColor;
+                
+                applyCharacterColors();
+            }
+            
+            // Load saved colors on start
+            loadSavedColors();
             
             // Color input event listeners
             bodyColorInput.addEventListener('input', applyCharacterColors);
             skinColorInput.addEventListener('input', applyCharacterColors);
             pantsColorInput.addEventListener('input', applyCharacterColors);
             jetpackColorInput.addEventListener('input', applyCharacterColors);
+            
+            // Level configuration
+            const levels = [
+                { distance: 5000, obstacleFrequency: 0.02, obstacleSpeed: 5, background: '#87CEEB' },
+                { distance: 7500, obstacleFrequency: 0.025, obstacleSpeed: 5.5, background: '#78A7C5' },
+                { distance: 10000, obstacleFrequency: 0.03, obstacleSpeed: 6, background: '#6986AB' },
+                { distance: 12500, obstacleFrequency: 0.035, obstacleSpeed: 6.5, background: '#5A6591' },
+                { distance: 15000, obstacleFrequency: 0.04, obstacleSpeed: 7, background: '#4B4577' },
+                { distance: 17500, obstacleFrequency: 0.045, obstacleSpeed: 7.5, background: '#3C245D' },
+                { distance: 20000, obstacleFrequency: 0.05, obstacleSpeed: 8, background: '#2D0243' },
+                { distance: 25000, obstacleFrequency: 0.055, obstacleSpeed: 8.5, background: '#1E0029' },
+                { distance: 30000, obstacleFrequency: 0.06, obstacleSpeed: 9, background: '#0F001A' },
+                { distance: 35000, obstacleFrequency: 0.07, obstacleSpeed: 10, background: '#000000' }
+            ];
             
             // Game state
             let isJetpackActive = false;
@@ -363,9 +517,15 @@
             let obstacles = [];
             let coins = [];
             let powerups = [];
+            let backgroundElements = [];
             let gameOver = false;
             let animationFrameId = null;
             let gameActive = false;
+            let currentLevel = 1;
+            let distanceTraveled = 0;
+            let levelTarget = levels[0].distance;
+            let obstacleFrequency = levels[0].obstacleFrequency;
+            let completedLevels = JSON.parse(localStorage.getItem('completedLevels')) || [];
             
             // Update high score display
             highScoreDisplay.textContent = `High Score: ${highScore}`;
@@ -380,6 +540,131 @@
             const playerWidth = 50;
             const groundHeight = 50;
             const ceilingHeight = 20;
+            
+            // Generate level selection buttons
+            function generateLevelButtons() {
+                levelButtonsContainer.innerHTML = '';
+                for (let i = 0; i < levels.length; i++) {
+                    const levelBtn = document.createElement('button');
+                    levelBtn.className = 'level-btn';
+                    levelBtn.textContent = i + 1;
+                    
+                    // Show locked/completed status
+                    if (i > 0 && !completedLevels.includes(i)) {
+                        if (!completedLevels.includes(i - 1)) {
+                            levelBtn.classList.add('locked');
+                        }
+                    }
+                    
+                    if (completedLevels.includes(i)) {
+                        levelBtn.classList.add('completed');
+                    }
+                    
+                    levelBtn.addEventListener('click', function() {
+                        // Only allow selecting unlocked levels
+                        if (!levelBtn.classList.contains('locked')) {
+                            selectLevel(i);
+                        }
+                    });
+                    
+                    levelButtonsContainer.appendChild(levelBtn);
+                }
+            }
+            
+            // Select level
+            function selectLevel(levelIndex) {
+                currentLevel = levelIndex + 1;
+                levelTarget = levels[levelIndex].distance;
+                obstacleFrequency = levels[levelIndex].obstacleFrequency;
+                baseGameSpeed = levels[levelIndex].obstacleSpeed;
+                gameSpeed = baseGameSpeed;
+                
+                // Set background color based on level
+                gameContainer.style.backgroundColor = levels[levelIndex].background;
+                
+                // Generate background elements based on level
+                generateBackgroundElements(levelIndex);
+                
+                startGame();
+            }
+            
+            // Generate background elements based on level
+            function generateBackgroundElements(levelIndex) {
+                // Clear existing background elements
+                while (backgroundElements.length > 0) {
+                    gameContainer.removeChild(backgroundElements[0].element);
+                    backgroundElements.shift();
+                }
+                
+                // Number of elements scales with level
+                const numClouds = Math.max(3, 6 - levelIndex);
+                const numMountains = Math.min(5, Math.floor(levelIndex / 2) + 1);
+                
+                // Add clouds
+                for (let i = 0; i < numClouds; i++) {
+                    createBackgroundElement('cloud');
+                }
+                
+                // Add mountains in later levels
+                if (levelIndex >= 2) {
+                    for (let i = 0; i < numMountains; i++) {
+                        createBackgroundElement('mountain');
+                    }
+                }
+            }
+            
+            // Create a background element
+            function createBackgroundElement(type) {
+                const element = document.createElement('div');
+                element.className = 'background-element ' + type;
+                
+                let width, height, bottom, left;
+                
+                if (type === 'cloud') {
+                    width = Math.floor(Math.random() * 200) + 100;
+                    height = Math.floor(Math.random() * 40) + 30;
+                    bottom = Math.floor(Math.random() * (gameContainer.clientHeight - 200)) + 150;
+                    left = Math.floor(Math.random() * gameContainer.clientWidth);
+                    
+                    // Add some depth/layering to clouds
+                    const opacity = Math.random() * 0.4 + 0.4;
+                    element.style.opacity = opacity;
+                    
+                    // Slower movement for distant clouds
+                    const speed = Math.max(1, baseGameSpeed * (opacity - 0.3));
+                    
+                    backgroundElements.push({
+                        element: element,
+                        type: type,
+                        position: left,
+                        width: width,
+                        speed: speed
+                    });
+                } else if (type === 'mountain') {
+                    width = Math.floor(Math.random() * 300) + 200;
+                    height = Math.floor(Math.random() * 150) + 100;
+                    bottom = groundHeight;
+                    left = Math.floor(Math.random() * gameContainer.clientWidth);
+                    
+                    // Mountains move slower than game speed
+                    const speed = baseGameSpeed * 0.3;
+                    
+                    backgroundElements.push({
+                        element: element,
+                        type: type,
+                        position: left,
+                        width: width,
+                        speed: speed
+                    });
+                }
+                
+                element.style.width = `${width}px`;
+                element.style.height = `${height}px`;
+                element.style.bottom = `${bottom}px`;
+                element.style.left = `${left}px`;
+                
+                gameContainer.appendChild(element);
+            }
             
             // Initialize player position
             player.style.bottom = `${groundHeight + 10}px`;
@@ -430,13 +715,18 @@
             }
             
             // Event handlers for buttons
-            startGameBtn.addEventListener('click', startGame);
+            startGameBtn.addEventListener('click', function() {
+                selectLevel(0); // Start with level 1
+            });
             restartBtn.addEventListener('click', restartGame);
             menuBtn.addEventListener('click', showMainMenu);
             
             function startGame() {
                 titleScreen.style.display = 'none';
                 gameActive = true;
+                levelIndicator.textContent = `Level: ${currentLevel}`;
+                distanceTraveled = 0;
+                updateProgress();
                 addGameControls();
                 gameLoop();
             }
@@ -447,6 +737,7 @@
                 gameActive = false;
                 gameOver = false;
                 resetGameState();
+                generateLevelButtons();
             }
             
             function updatePlayerPosition() {
@@ -479,16 +770,53 @@
             }
             
             function createObstacle() {
-                if (Math.random() < 0.03) {
+                if (Math.random() < obstacleFrequency) {
                     const obstacle = document.createElement('div');
                     obstacle.className = 'obstacle';
                     
                     // Randomize obstacle size and position
                     const height = Math.floor(Math.random() * 150) + 50;
                     const width = Math.floor(Math.random() * 30) + 20;
-                    const bottom = Math.random() < 0.5 ? 
-                                 groundHeight : // Bottom obstacle
-                                 gameContainer.clientHeight - height - groundHeight; // Top obstacle
+                    
+                    // As level increases, create more challenging obstacle patterns
+                    let bottom;
+                    
+                    if (currentLevel <= 3) {
+                        // Simpler obstacles in first few levels
+                        bottom = Math.random() < 0.5 ? groundHeight : gameContainer.clientHeight - height - groundHeight;
+                    } else if (currentLevel <= 6) {
+                        // More varied positioning in middle levels
+                        const randomPos = Math.random();
+                        if (randomPos < 0.4) {
+                            bottom = groundHeight;
+                        } else if (randomPos < 0.8) {
+                            bottom = gameContainer.clientHeight - height - groundHeight;
+                        } else {
+                            // Middle obstacles occasionally
+                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - height - groundHeight * 2)) + groundHeight;
+                        }
+                    } else {
+                        // Most challenging positions in higher levels
+                        const randomPos = Math.random();
+                        if (randomPos < 0.3) {
+                            bottom = groundHeight;
+                        } else if (randomPos < 0.6) {
+                            bottom = gameContainer.clientHeight - height - groundHeight;
+                        } else {
+                            // More middle obstacles
+                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - height - groundHeight * 2)) + groundHeight;
+                        }
+                        
+                        // In higher levels, occasionally create gap obstacles
+                        if (randomPos > 0.85 && obstacles.length > 0) {
+                            const lastObstacle = obstacles[obstacles.length - 1];
+                            if (lastObstacle.bottom === groundHeight) {
+                                bottom = gameContainer.clientHeight - height - groundHeight;
+                            } else {
+                                bottom = groundHeight;
+                            }
+                        }
+                    }
                     
                     obstacle.style.height = `${height}px`;
                     obstacle.style.width = `${width}px`;
@@ -507,11 +835,73 @@
             }
             
             function createCoin() {
-                if (Math.random() < 0.05) {
+                // Coin frequency increases with level
+                const coinChance = 0.03 + (currentLevel * 0.005);
+                
+                if (Math.random() < coinChance) {
                     const coin = document.createElement('div');
                     coin.className = 'coin';
                     
-                    const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                    let bottom;
+                    
+                    // Create coin patterns based on level
+                    if (currentLevel <= 3) {
+                        // Simple coin placement
+                        bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                    } else {
+                        // Create coin patterns in higher levels
+                        const pattern = Math.random();
+                        
+                        if (pattern < 0.3) {
+                            // Single coins
+                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                        } else if (pattern < 0.6) {
+                            // Create a horizontal row of coins
+                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                            
+                            // Add additional coins in a row
+                            const count = Math.floor(Math.random() * 3) + 2;
+                            for (let i = 1; i < count; i++) {
+                                setTimeout(() => {
+                                    if (gameActive && !gameOver) {
+                                        const extraCoin = document.createElement('div');
+                                        extraCoin.className = 'coin';
+                                        extraCoin.style.bottom = `${bottom}px`;
+                                        extraCoin.style.left = `${gameContainer.clientWidth}px`;
+                                        gameContainer.appendChild(extraCoin);
+                                        coins.push({
+                                            element: extraCoin,
+                                            position: gameContainer.clientWidth,
+                                            bottom: bottom
+                                        });
+                                    }
+                                }, i * 200);
+                            }
+                        } else {
+                            // Create a vertical line of coins
+                            const baseBottom = Math.max(groundHeight + 50, Math.min(gameContainer.clientHeight - 150, Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 100)) + groundHeight));
+                            bottom = baseBottom;
+                            
+                            // Add additional coins in a column
+                            const count = Math.floor(Math.random() * 3) + 2;
+                            for (let i = 1; i < count; i++) {
+                                setTimeout(() => {
+                                    if (gameActive && !gameOver) {
+                                        const extraCoin = document.createElement('div');
+                                        extraCoin.className = 'coin';
+                                        extraCoin.style.bottom = `${baseBottom + (i * 40)}px`;
+                                        extraCoin.style.left = `${gameContainer.clientWidth}px`;
+                                        gameContainer.appendChild(extraCoin);
+                                        coins.push({
+                                            element: extraCoin,
+                                            position: gameContainer.clientWidth,
+                                            bottom: baseBottom + (i * 40)
+                                        });
+                                    }
+                                }, i * 200);
+                            }
+                        }
+                    }
                     
                     coin.style.bottom = `${bottom}px`;
                     coin.style.left = `${gameContainer.clientWidth}px`;
@@ -529,12 +919,16 @@
             }
             
             function createPowerup() {
-                if (Math.random() < 0.01) {
+                // Powerup frequency based on level
+                const powerupChance = 0.005 + (currentLevel * 0.001);
+                
+                if (Math.random() < powerupChance) {
                     const powerup = document.createElement('div');
                     powerup.className = 'powerup';
                     
-                    // Randomly choose between speed boost and shield
-                    const type = Math.random() < 0.5 ? 'speed-boost' : 'shield';
+                    // In higher levels, shields become rarer and speed boosts more common
+                    const typeChance = Math.max(0.3, 0.6 - (currentLevel * 0.03));
+                    const type = Math.random() < typeChance ? 'shield' : 'speed-boost';
                     powerup.classList.add(type);
                     
                     const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 30)) + groundHeight;
@@ -552,6 +946,24 @@
                         bottom: bottom,
                         type: type
                     });
+                }
+            }
+            
+            function moveBackgroundElements() {
+                for (let i = 0; i < backgroundElements.length; i++) {
+                    backgroundElements[i].position -= backgroundElements[i].speed;
+                    backgroundElements[i].element.style.left = `${backgroundElements[i].position}px`;
+                    
+                    // Reposition background elements that go off-screen
+                    if (backgroundElements[i].position + backgroundElements[i].width < 0) {
+                        if (backgroundElements[i].type === 'cloud') {
+                            backgroundElements[i].position = gameContainer.clientWidth;
+                            backgroundElements[i].element.style.left = `${backgroundElements[i].position}px`;
+                        } else if (backgroundElements[i].type === 'mountain') {
+                            backgroundElements[i].position = gameContainer.clientWidth;
+                            backgroundElements[i].element.style.left = `${backgroundElements[i].position}px`;
+                        }
+                    }
                 }
             }
             
@@ -698,7 +1110,9 @@
                 gameContainer.appendChild(effect);
                 
                 setTimeout(() => {
-                    gameContainer.removeChild(effect);
+                    if (effect.parentNode === gameContainer) {
+                        gameContainer.removeChild(effect);
+                    }
                 }, 1000);
             }
             
@@ -718,7 +1132,9 @@
                 gameContainer.appendChild(effect);
                 
                 setTimeout(() => {
-                    gameContainer.removeChild(effect);
+                    if (effect.parentNode === gameContainer) {
+                        gameContainer.removeChild(effect);
+                    }
                 }, 1000);
             }
             
@@ -738,7 +1154,9 @@
                 gameContainer.appendChild(effect);
                 
                 setTimeout(() => {
-                    gameContainer.removeChild(effect);
+                    if (effect.parentNode === gameContainer) {
+                        gameContainer.removeChild(effect);
+                    }
                 }, 500);
             }
             
@@ -783,13 +1201,64 @@
             
             function updateScore() {
                 score++;
-                if (score % 1000 === 0) {
-                    baseGameSpeed += 1;
-                    if (!speedBoostTimeLeft) {
-                        gameSpeed = baseGameSpeed;
-                    }
+                distanceTraveled += gameSpeed;
+                
+                updateProgress();
+                
+                // Check for level completion
+                if (distanceTraveled >= levelTarget) {
+                    completeLevel();
                 }
+                
                 scoreDisplay.textContent = `Score: ${score}`;
+            }
+            
+            function updateProgress() {
+                const progressPercentage = Math.min(100, (distanceTraveled / levelTarget) * 100);
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+            
+            function completeLevel() {
+                // Mark level as completed
+                if (!completedLevels.includes(currentLevel - 1)) {
+                    completedLevels.push(currentLevel - 1);
+                    localStorage.setItem('completedLevels', JSON.stringify(completedLevels));
+                }
+                
+                // Show level complete message
+                levelCompleteMessage.style.display = 'block';
+                
+                // Move to next level if available
+                if (currentLevel < levels.length) {
+                    setTimeout(() => {
+                        levelCompleteMessage.style.display = 'none';
+                        currentLevel++;
+                        levelTarget = levels[currentLevel - 1].distance;
+                        obstacleFrequency = levels[currentLevel - 1].obstacleFrequency;
+                        baseGameSpeed = levels[currentLevel - 1].obstacleSpeed;
+                        gameSpeed = hasShield ? baseGameSpeed * 1.5 : baseGameSpeed;
+                        distanceTraveled = 0;
+                        
+                        // Update level indicator
+                        levelIndicator.textContent = `Level: ${currentLevel}`;
+                        
+                        // Update background color
+                        gameContainer.style.backgroundColor = levels[currentLevel - 1].background;
+                        
+                        // Generate new background elements
+                        generateBackgroundElements(currentLevel - 1);
+                        
+                        updateProgress();
+                    }, 2000);
+                } else {
+                    // Game completed
+                    setTimeout(() => {
+                        levelCompleteMessage.textContent = "Congratulations! You completed all levels!";
+                        setTimeout(() => {
+                            endGame();
+                        }, 2000);
+                    }, 2000);
+                }
             }
             
             function endGame() {
@@ -832,6 +1301,11 @@
                     powerups.shift();
                 }
                 
+                while (backgroundElements.length > 0) {
+                    gameContainer.removeChild(backgroundElements[0].element);
+                    backgroundElements.shift();
+                }
+                
                 // Reset game state
                 isJetpackActive = false;
                 playerY = gameContainer.clientHeight / 2;
@@ -839,16 +1313,24 @@
                 gameSpeed = 5;
                 baseGameSpeed = 5;
                 score = 0;
+                distanceTraveled = 0;
                 hasShield = false;
                 shieldTimeLeft = 0;
                 speedBoostTimeLeft = 0;
                 player.style.boxShadow = 'none';
                 
+                // Reset game container color
+                gameContainer.style.backgroundColor = '#87CEEB';
+                
                 // Reset UI
                 scoreDisplay.textContent = 'Score: 0';
                 powerupIndicator.textContent = '';
+                levelCompleteMessage.style.display = 'none';
                 gameOverScreen.style.display = 'none';
                 jetpackFlame.style.opacity = '0';
+                
+                // Reset progress bar
+                progressBar.style.width = '0%';
                 
                 // Reset player position and rotation
                 player.style.bottom = `${groundHeight + 10}px`;
@@ -861,6 +1343,18 @@
                 resetGameState();
                 gameOver = false;
                 gameActive = true;
+                currentLevel = 1;
+                levelTarget = levels[0].distance;
+                obstacleFrequency = levels[0].obstacleFrequency;
+                baseGameSpeed = levels[0].obstacleSpeed;
+                gameSpeed = baseGameSpeed;
+                
+                // Update level indicator
+                levelIndicator.textContent = `Level: ${currentLevel}`;
+                
+                // Generate background elements
+                generateBackgroundElements(0);
+                
                 addGameControls();
                 gameLoop();
             }
@@ -871,6 +1365,7 @@
                     createObstacle();
                     createCoin();
                     createPowerup();
+                    moveBackgroundElements();
                     moveObstacles();
                     moveCoins();
                     movePowerups();
@@ -905,8 +1400,18 @@
                     0% { box-shadow: 0 0 5px gold; }
                     100% { box-shadow: 0 0 15px gold; }
                 }
+                
+                @keyframes fadeInOut {
+                    0% { opacity: 0; }
+                    20% { opacity: 1; }
+                    80% { opacity: 1; }
+                    100% { opacity: 0; }
+                }
             `;
             document.head.appendChild(style);
+            
+            // Generate initial level buttons
+            generateLevelButtons();
         });
     </script>
 </body>
