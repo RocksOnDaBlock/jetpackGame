@@ -8,7 +8,7 @@
         body {
             margin: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             background-color: #222;
         }
         #game-container {
@@ -20,21 +20,74 @@
         }
         #player {
             position: absolute;
-            width: 40px;
-            height: 60px;
-            background-color: #FF5733;
-            border-radius: 5px;
+            width: 50px;
+            height: 70px;
             left: 100px;
             transition: transform 0.1s;
         }
-        .jetpack-flame {
+        .player-body {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background-color: #FF5733;
+            border-radius: 8px 8px 0 0;
+            bottom: 0;
+            left: 10px;
+        }
+        .player-head {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FFC0CB;
+            border-radius: 50%;
+            bottom: 40px;
+            left: 15px;
+        }
+        .player-arm {
+            position: absolute;
+            width: 8px;
+            height: 20px;
+            background-color: #FFC0CB;
+            bottom: 20px;
+        }
+        .player-arm.left {
+            left: 2px;
+            transform-origin: bottom;
+        }
+        .player-arm.right {
+            right: 2px;
+            transform-origin: bottom;
+        }
+        .player-leg {
+            position: absolute;
+            width: 10px;
+            height: 15px;
+            background-color: #4169E1;
+            bottom: 0;
+        }
+        .player-leg.left {
+            left: 12px;
+        }
+        .player-leg.right {
+            right: 12px;
+        }
+        .jetpack {
             position: absolute;
             width: 20px;
             height: 30px;
-            background-color: #FFC300;
-            border-radius: 50% 50% 0 0;
-            left: -10px;
-            top: 20px;
+            background-color: #555;
+            border-radius: 5px;
+            left: -5px;
+            bottom: 15px;
+        }
+        .jetpack-flame {
+            position: absolute;
+            width: 15px;
+            height: 25px;
+            background: linear-gradient(to bottom, #FFC300, #FF5733);
+            border-radius: 0 0 50% 50%;
+            left: -2px;
+            bottom: -20px;
             opacity: 0;
             transition: opacity 0.1s;
         }
@@ -49,12 +102,14 @@
             height: 20px;
             background-color: gold;
             border-radius: 50%;
+            box-shadow: 0 0 5px gold;
         }
         .powerup {
             position: absolute;
             width: 30px;
             height: 30px;
             border-radius: 5px;
+            box-shadow: 0 0 10px white;
         }
         .speed-boost {
             background-color: #39FF14;
@@ -68,6 +123,7 @@
             width: 100%;
             height: 50px;
             background-color: #8B4513;
+            background-image: linear-gradient(to bottom, #8B4513, #654321);
         }
         .ceiling {
             position: absolute;
@@ -97,8 +153,9 @@
             text-align: center;
             display: none;
             z-index: 200;
+            min-width: 300px;
         }
-        #restart-btn {
+        .btn {
             margin-top: 20px;
             padding: 10px 20px;
             background-color: #FF5733;
@@ -106,6 +163,11 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #FF7043;
         }
         #powerup-indicator {
             position: absolute;
@@ -114,13 +176,96 @@
             color: white;
             font-size: 18px;
             z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        #title-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #1a2a6c, #b21f1f, #fdbb2d);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+        #title {
+            font-size: 48px;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        #high-score {
+            font-size: 24px;
+            color: gold;
+            margin-bottom: 40px;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        #customization {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            width: 80%;
+            max-width: 400px;
+        }
+        #customization h2 {
+            color: white;
+            text-align: center;
+            margin-top: 0;
+        }
+        .color-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .color-option label {
+            color: white;
+            flex: 1;
+        }
+        .color-option input {
+            flex: 1;
+        }
+        #start-game-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #FF5733;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        #start-game-btn:hover {
+            transform: scale(1.05);
+            background-color: #FF7043;
+        }
+        @media (max-width: 768px) {
+            #title {
+                font-size: 36px;
+            }
+            #customization {
+                width: 90%;
+            }
         }
     </style>
 </head>
 <body>
     <div id="game-container">
         <div id="player">
-            <div class="jetpack-flame"></div>
+            <div class="player-head"></div>
+            <div class="player-body"></div>
+            <div class="player-arm left"></div>
+            <div class="player-arm right"></div>
+            <div class="player-leg left"></div>
+            <div class="player-leg right"></div>
+            <div class="jetpack">
+                <div class="jetpack-flame"></div>
+            </div>
         </div>
         <div class="ground"></div>
         <div class="ceiling"></div>
@@ -129,8 +274,37 @@
         <div id="game-over">
             <h2>Game Over</h2>
             <p id="final-score">Your Score: 0</p>
-            <button id="restart-btn">Play Again</button>
+            <p id="new-high-score" style="color: gold; display: none;">New High Score!</p>
+            <button id="restart-btn" class="btn">Play Again</button>
+            <button id="menu-btn" class="btn">Main Menu</button>
         </div>
+    </div>
+
+    <div id="title-screen">
+        <h1 id="title">JETPACK ADVENTURE</h1>
+        <div id="high-score">High Score: 0</div>
+        
+        <div id="customization">
+            <h2>Customize Character</h2>
+            <div class="color-option">
+                <label for="body-color">Body Color:</label>
+                <input type="color" id="body-color" value="#FF5733">
+            </div>
+            <div class="color-option">
+                <label for="skin-color">Skin Color:</label>
+                <input type="color" id="skin-color" value="#FFC0CB">
+            </div>
+            <div class="color-option">
+                <label for="pants-color">Pants Color:</label>
+                <input type="color" id="pants-color" value="#4169E1">
+            </div>
+            <div class="color-option">
+                <label for="jetpack-color">Jetpack Color:</label>
+                <input type="color" id="jetpack-color" value="#555555">
+            </div>
+        </div>
+        
+        <button id="start-game-btn" class="btn">START GAME</button>
     </div>
 
     <script>
@@ -142,8 +316,39 @@
             const scoreDisplay = document.getElementById('score-display');
             const gameOverScreen = document.getElementById('game-over');
             const finalScoreDisplay = document.getElementById('final-score');
+            const newHighScoreText = document.getElementById('new-high-score');
             const restartBtn = document.getElementById('restart-btn');
+            const menuBtn = document.getElementById('menu-btn');
             const powerupIndicator = document.getElementById('powerup-indicator');
+            const titleScreen = document.getElementById('title-screen');
+            const highScoreDisplay = document.getElementById('high-score');
+            const startGameBtn = document.getElementById('start-game-btn');
+            
+            // Character customization elements
+            const bodyColorInput = document.getElementById('body-color');
+            const skinColorInput = document.getElementById('skin-color');
+            const pantsColorInput = document.getElementById('pants-color');
+            const jetpackColorInput = document.getElementById('jetpack-color');
+            
+            // Apply character colors
+            function applyCharacterColors() {
+                document.querySelector('.player-body').style.backgroundColor = bodyColorInput.value;
+                document.querySelector('.player-head').style.backgroundColor = skinColorInput.value;
+                document.querySelector('.player-arm.left').style.backgroundColor = skinColorInput.value;
+                document.querySelector('.player-arm.right').style.backgroundColor = skinColorInput.value;
+                document.querySelector('.player-leg.left').style.backgroundColor = pantsColorInput.value;
+                document.querySelector('.player-leg.right').style.backgroundColor = pantsColorInput.value;
+                document.querySelector('.jetpack').style.backgroundColor = jetpackColorInput.value;
+            }
+            
+            // Apply initial colors
+            applyCharacterColors();
+            
+            // Color input event listeners
+            bodyColorInput.addEventListener('input', applyCharacterColors);
+            skinColorInput.addEventListener('input', applyCharacterColors);
+            pantsColorInput.addEventListener('input', applyCharacterColors);
+            jetpackColorInput.addEventListener('input', applyCharacterColors);
             
             // Game state
             let isJetpackActive = false;
@@ -154,11 +359,16 @@
             let gameSpeed = 5;
             let baseGameSpeed = 5;
             let score = 0;
+            let highScore = localStorage.getItem('highScore') || 0;
             let obstacles = [];
             let coins = [];
             let powerups = [];
             let gameOver = false;
             let animationFrameId = null;
+            let gameActive = false;
+            
+            // Update high score display
+            highScoreDisplay.textContent = `High Score: ${highScore}`;
             
             // Player state
             let hasShield = false;
@@ -166,34 +376,24 @@
             let speedBoostTimeLeft = 0;
             
             // Game dimensions
-            const playerHeight = 60;
-            const playerWidth = 40;
+            const playerHeight = 70;
+            const playerWidth = 50;
             const groundHeight = 50;
             const ceilingHeight = 20;
             
             // Initialize player position
             player.style.bottom = `${groundHeight + 10}px`;
             
-            // Event listeners
-            document.addEventListener('mousedown', activateJetpack);
-            document.addEventListener('mouseup', deactivateJetpack);
-            document.addEventListener('touchstart', activateJetpack);
-            document.addEventListener('touchend', deactivateJetpack);
-            document.addEventListener('keydown', function(e) {
-                if (e.code === 'Space') activateJetpack(e);
-            });
-            document.addEventListener('keyup', function(e) {
-                if (e.code === 'Space') deactivateJetpack(e);
-            });
-            
-            restartBtn.addEventListener('click', restartGame);
-            
-            // Game functions
+            // Event listeners for game controls
             function activateJetpack(e) {
                 e.preventDefault();
-                if (!gameOver) {
+                if (gameActive && !gameOver) {
                     isJetpackActive = true;
                     jetpackFlame.style.opacity = '1';
+                    
+                    // Animate arms when jetpack is active
+                    document.querySelector('.player-arm.left').style.transform = 'rotate(-30deg)';
+                    document.querySelector('.player-arm.right').style.transform = 'rotate(30deg)';
                 }
             }
             
@@ -201,6 +401,52 @@
                 e.preventDefault();
                 isJetpackActive = false;
                 jetpackFlame.style.opacity = '0';
+                
+                // Reset arm position
+                document.querySelector('.player-arm.left').style.transform = 'rotate(0deg)';
+                document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
+            }
+            
+            // Add game control event listeners
+            function addGameControls() {
+                document.addEventListener('mousedown', activateJetpack);
+                document.addEventListener('mouseup', deactivateJetpack);
+                document.addEventListener('touchstart', activateJetpack);
+                document.addEventListener('touchend', deactivateJetpack);
+                document.addEventListener('keydown', function(e) {
+                    if (e.code === 'Space') activateJetpack(e);
+                });
+                document.addEventListener('keyup', function(e) {
+                    if (e.code === 'Space') deactivateJetpack(e);
+                });
+            }
+            
+            // Remove game control event listeners
+            function removeGameControls() {
+                document.removeEventListener('mousedown', activateJetpack);
+                document.removeEventListener('mouseup', deactivateJetpack);
+                document.removeEventListener('touchstart', activateJetpack);
+                document.removeEventListener('touchend', deactivateJetpack);
+            }
+            
+            // Event handlers for buttons
+            startGameBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', restartGame);
+            menuBtn.addEventListener('click', showMainMenu);
+            
+            function startGame() {
+                titleScreen.style.display = 'none';
+                gameActive = true;
+                addGameControls();
+                gameLoop();
+            }
+            
+            function showMainMenu() {
+                gameOverScreen.style.display = 'none';
+                titleScreen.style.display = 'flex';
+                gameActive = false;
+                gameOver = false;
+                resetGameState();
             }
             
             function updatePlayerPosition() {
@@ -226,6 +472,10 @@
                 }
                 
                 player.style.bottom = `${playerY}px`;
+                
+                // Apply tilt based on velocity
+                const tiltAngle = Math.max(-20, Math.min(20, playerVelocity * 2));
+                player.style.transform = `rotate(${tiltAngle}deg)`;
             }
             
             function createObstacle() {
@@ -266,6 +516,9 @@
                     coin.style.bottom = `${bottom}px`;
                     coin.style.left = `${gameContainer.clientWidth}px`;
                     
+                    // Add shine animation
+                    coin.style.animation = 'shine 1s infinite alternate';
+                    
                     gameContainer.appendChild(coin);
                     coins.push({
                         element: coin,
@@ -288,6 +541,9 @@
                     
                     powerup.style.bottom = `${bottom}px`;
                     powerup.style.left = `${gameContainer.clientWidth}px`;
+                    
+                    // Add pulsing animation
+                    powerup.style.animation = 'pulse 1.5s infinite';
                     
                     gameContainer.appendChild(powerup);
                     powerups.push({
@@ -363,6 +619,9 @@
                             shieldTimeLeft = 0;
                             updatePowerupIndicator();
                             
+                            // Create shield break effect
+                            createShieldBreakEffect();
+                            
                             // Remove the obstacle
                             gameContainer.removeChild(obstacles[i].element);
                             obstacles.splice(i, 1);
@@ -383,7 +642,9 @@
                     if (playerRight > coinLeft && playerLeft < coinRight &&
                         playerBottom > coinTop && playerTop < coinBottom) {
                         
-                        // Collect coin
+                        // Collect coin with effect
+                        createCoinCollectEffect(coins[i].position, coins[i].bottom);
+                        
                         gameContainer.removeChild(coins[i].element);
                         coins.splice(i, 1);
                         score += 10;
@@ -402,7 +663,9 @@
                     if (playerRight > powerupLeft && playerLeft < powerupRight &&
                         playerBottom > powerupTop && playerTop < powerupBottom) {
                         
-                        // Apply powerup
+                        // Apply powerup with effect
+                        createPowerupCollectEffect(powerups[i].type, powerups[i].position, powerups[i].bottom);
+                        
                         if (powerups[i].type === 'speed-boost') {
                             gameSpeed = baseGameSpeed * 1.5;
                             speedBoostTimeLeft = 5 * 60; // 5 seconds at 60fps
@@ -417,6 +680,66 @@
                         i--;
                     }
                 }
+            }
+            
+            function createCoinCollectEffect(x, y) {
+                const effect = document.createElement('div');
+                effect.textContent = '+10';
+                effect.style.position = 'absolute';
+                effect.style.left = `${x}px`;
+                effect.style.bottom = `${y}px`;
+                effect.style.color = 'gold';
+                effect.style.fontSize = '18px';
+                effect.style.fontWeight = 'bold';
+                effect.style.zIndex = '150';
+                effect.style.textShadow = '0 0 5px black';
+                effect.style.animation = 'float-up 1s forwards';
+                
+                gameContainer.appendChild(effect);
+                
+                setTimeout(() => {
+                    gameContainer.removeChild(effect);
+                }, 1000);
+            }
+            
+            function createPowerupCollectEffect(type, x, y) {
+                const effect = document.createElement('div');
+                effect.textContent = type === 'speed-boost' ? 'Speed Boost!' : 'Shield!';
+                effect.style.position = 'absolute';
+                effect.style.left = `${x}px`;
+                effect.style.bottom = `${y}px`;
+                effect.style.color = type === 'speed-boost' ? '#39FF14' : '#3498DB';
+                effect.style.fontSize = '18px';
+                effect.style.fontWeight = 'bold';
+                effect.style.zIndex = '150';
+                effect.style.textShadow = '0 0 5px black';
+                effect.style.animation = 'float-up 1s forwards';
+                
+                gameContainer.appendChild(effect);
+                
+                setTimeout(() => {
+                    gameContainer.removeChild(effect);
+                }, 1000);
+            }
+            
+            function createShieldBreakEffect() {
+                // Add shield break animation around player
+                const effect = document.createElement('div');
+                effect.style.position = 'absolute';
+                effect.style.width = '80px';
+                effect.style.height = '80px';
+                effect.style.left = '85px';
+                effect.style.bottom = `${playerY - 5}px`;
+                effect.style.borderRadius = '50%';
+                effect.style.border = '3px solid #3498DB';
+                effect.style.zIndex = '150';
+                effect.style.animation = 'shield-break 0.5s forwards';
+                
+                gameContainer.appendChild(effect);
+                
+                setTimeout(() => {
+                    gameContainer.removeChild(effect);
+                }, 500);
             }
             
             function updatePowerupStatus() {
@@ -435,6 +758,13 @@
                 }
                 
                 updatePowerupIndicator();
+                
+                // Visual indicator for shield
+                if (hasShield) {
+                    player.style.boxShadow = '0 0 10px 5px #3498DB';
+                } else {
+                    player.style.boxShadow = 'none';
+                }
             }
             
             function updatePowerupIndicator() {
@@ -464,19 +794,28 @@
             
             function endGame() {
                 gameOver = true;
+                gameActive = false;
                 finalScoreDisplay.textContent = `Your Score: ${score}`;
+                
+                // Check for high score
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('highScore', highScore);
+                    highScoreDisplay.textContent = `High Score: ${highScore}`;
+                    newHighScoreText.style.display = 'block';
+                } else {
+                    newHighScoreText.style.display = 'none';
+                }
+                
                 gameOverScreen.style.display = 'block';
                 
                 // Clean up event listeners
-                document.removeEventListener('mousedown', activateJetpack);
-                document.removeEventListener('mouseup', deactivateJetpack);
-                document.removeEventListener('touchstart', activateJetpack);
-                document.removeEventListener('touchend', deactivateJetpack);
+                removeGameControls();
                 
                 cancelAnimationFrame(animationFrameId);
             }
             
-            function restartGame() {
+            function resetGameState() {
                 // Clear all elements
                 while (obstacles.length > 0) {
                     gameContainer.removeChild(obstacles[0].element);
@@ -500,10 +839,10 @@
                 gameSpeed = 5;
                 baseGameSpeed = 5;
                 score = 0;
-                gameOver = false;
                 hasShield = false;
                 shieldTimeLeft = 0;
                 speedBoostTimeLeft = 0;
+                player.style.boxShadow = 'none';
                 
                 // Reset UI
                 scoreDisplay.textContent = 'Score: 0';
@@ -511,18 +850,23 @@
                 gameOverScreen.style.display = 'none';
                 jetpackFlame.style.opacity = '0';
                 
-                // Add back event listeners
-                document.addEventListener('mousedown', activateJetpack);
-                document.addEventListener('mouseup', deactivateJetpack);
-                document.addEventListener('touchstart', activateJetpack);
-                document.addEventListener('touchend', deactivateJetpack);
-                
-                // Start game loop
+                // Reset player position and rotation
+                player.style.bottom = `${groundHeight + 10}px`;
+                player.style.transform = 'rotate(0deg)';
+                document.querySelector('.player-arm.left').style.transform = 'rotate(0deg)';
+                document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
+            }
+            
+            function restartGame() {
+                resetGameState();
+                gameOver = false;
+                gameActive = true;
+                addGameControls();
                 gameLoop();
             }
             
             function gameLoop() {
-                if (!gameOver) {
+                if (gameActive && !gameOver) {
                     updatePlayerPosition();
                     createObstacle();
                     createCoin();
@@ -538,8 +882,31 @@
                 }
             }
             
-            // Start the game
-            gameLoop();
+            // Add CSS animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float-up {
+                    0% { transform: translateY(0); opacity: 1; }
+                    100% { transform: translateY(-50px); opacity: 0; }
+                }
+                
+                @keyframes shield-break {
+                    0% { transform: scale(1); opacity: 1; }
+                    100% { transform: scale(2); opacity: 0; }
+                }
+                
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+                
+                @keyframes shine {
+                    0% { box-shadow: 0 0 5px gold; }
+                    100% { box-shadow: 0 0 15px gold; }
+                }
+            `;
+            document.head.appendChild(style);
         });
     </script>
 </body>
