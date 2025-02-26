@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jetpack Adventure</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -22,97 +23,98 @@
             touch-action: manipulation;
             height: 100vh;
             width: 100vw;
+            position: fixed;
         }
         
         #game-container {
-            position: relative;
+            position: absolute;
             width: 100%;
-            height: 100vh;
+            height: 100%;
             overflow: hidden;
             background-color: #87CEEB;
         }
         
         #player {
             position: absolute;
-            width: 5vmin;
-            height: 7vmin;
-            left: 10vw;
+            width: 7vmin;
+            height: 10vmin;
+            left: 15vw;
             transition: transform 0.1s;
             z-index: 50;
         }
         
         .player-body {
             position: absolute;
-            width: 3vmin;
-            height: 4vmin;
+            width: 4vmin;
+            height: 6vmin;
             background-color: #FF5733;
             border-radius: 8px 8px 0 0;
             bottom: 0;
-            left: 1vmin;
+            left: 1.5vmin;
         }
         
         .player-head {
             position: absolute;
-            width: 2vmin;
-            height: 2vmin;
+            width: 3vmin;
+            height: 3vmin;
             background-color: #FFC0CB;
             border-radius: 50%;
-            bottom: 4vmin;
-            left: 1.5vmin;
+            bottom: 6vmin;
+            left: 2vmin;
         }
         
         .player-arm {
             position: absolute;
-            width: 0.8vmin;
-            height: 2vmin;
+            width: 1.2vmin;
+            height: 3vmin;
             background-color: #FFC0CB;
-            bottom: 2vmin;
+            bottom: 3vmin;
         }
         
         .player-arm.left {
-            left: 0.2vmin;
+            left: 0.3vmin;
             transform-origin: bottom;
         }
         
         .player-arm.right {
-            right: 0.2vmin;
+            right: 0.3vmin;
             transform-origin: bottom;
         }
         
         .player-leg {
             position: absolute;
-            width: 1vmin;
-            height: 1.5vmin;
+            width: 1.5vmin;
+            height: 2vmin;
             background-color: #4169E1;
             bottom: 0;
         }
         
         .player-leg.left {
-            left: 1.2vmin;
+            left: 1.5vmin;
         }
         
         .player-leg.right {
-            right: 1.2vmin;
+            right: 1.5vmin;
         }
         
         .jetpack {
             position: absolute;
-            width: 2vmin;
-            height: 3vmin;
+            width: 3vmin;
+            height: 4vmin;
             background-color: #555;
             border-radius: 5px;
-            left: -0.5vmin;
-            bottom: 1.5vmin;
+            left: -0.8vmin;
+            bottom: 2vmin;
         }
         
         .jetpack-flame {
             position: absolute;
-            width: 1.5vmin;
-            height: 2.5vmin;
+            width: 2vmin;
+            height: 3.5vmin;
             background: linear-gradient(to bottom, #FFC300, #FF5733);
             border-radius: 0 0 50% 50%;
-            left: -0.2vmin;
-            bottom: -2vmin;
+            left: -0.3vmin;
+            bottom: -3vmin;
             opacity: 0;
             transition: opacity 0.1s;
         }
@@ -126,19 +128,19 @@
         }
         
         .vertical-laser {
-            width: 0.8vmin; 
-            border-radius: 0.4vmin;
+            width: 1.2vmin; 
+            border-radius: 0.6vmin;
         }
         
         .horizontal-laser {
-            height: 0.8vmin;
-            border-radius: 0.4vmin;
+            height: 1.2vmin;
+            border-radius: 0.6vmin;
         }
         
         .laser-emitter {
             position: absolute;
-            width: 2vmin;
-            height: 2vmin;
+            width: 3vmin;
+            height: 3vmin;
             background-color: #444;
             border-radius: 4px;
             z-index: 60;
@@ -146,8 +148,8 @@
         
         .coin {
             position: absolute;
-            width: 2vmin;
-            height: 2vmin;
+            width: 4vmin;
+            height: 4vmin;
             background-color: gold;
             border-radius: 50%;
             box-shadow: 0 0 5px gold;
@@ -156,9 +158,9 @@
         
         .powerup {
             position: absolute;
-            width: 3vmin;
-            height: 3vmin;
-            border-radius: 5px;
+            width: 6vmin;
+            height: 6vmin;
+            border-radius: 10%;
             box-shadow: 0 0 10px white;
             z-index: 45;
         }
@@ -175,7 +177,7 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 5vh;
+            height: 8vh;
             background-color: #8B4513;
             background-image: linear-gradient(to bottom, #8B4513, #654321);
             z-index: 40;
@@ -185,81 +187,96 @@
             position: absolute;
             top: 0;
             width: 100%;
-            height: 2vh;
+            height: 3vh;
             background-color: #696969;
             z-index: 40;
         }
         
         #score-display {
             position: absolute;
-            top: 3vh;
-            left: 2vw;
+            top: 4vh;
+            left: 4vw;
             color: white;
-            font-size: calc(16px + 0.8vmin);
+            font-size: calc(16px + 1vmin);
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
         
         #game-over {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: 20px;
+            padding: 5vh 5vw;
             border-radius: 10px;
             text-align: center;
             display: none;
             z-index: 200;
-            min-width: 300px;
-            max-width: 90%;
+            width: 80%;
+            max-width: 500px;
+        }
+        
+        #game-over h2 {
+            font-size: calc(24px + 1vmin);
+            margin-bottom: 3vh;
+        }
+        
+        #game-over p {
+            font-size: calc(16px + 0.5vmin);
+            margin-bottom: 2vh;
         }
         
         .btn {
-            margin-top: 20px;
-            padding: 10px 20px;
+            margin: 2vh 1vw;
+            padding: 2vh 4vw;
             background-color: #FF5733;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: calc(14px + 0.4vmin);
+            font-size: calc(16px + 0.5vmin);
             transition: background-color 0.3s;
+            min-width: 40%;
         }
         
         .btn:hover {
             background-color: #FF7043;
         }
         
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
         #powerup-indicator {
             position: absolute;
-            top: 7vh;
-            left: 2vw;
+            top: 10vh;
+            left: 4vw;
             color: white;
-            font-size: calc(14px + 0.5vmin);
+            font-size: calc(14px + 0.8vmin);
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
         
         #level-indicator {
             position: absolute;
-            top: 11vh;
-            left: 2vw;
+            top: 16vh;
+            left: 4vw;
             color: white;
-            font-size: calc(14px + 0.5vmin);
+            font-size: calc(14px + 0.8vmin);
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
         
         #level-progress {
             position: absolute;
-            top: 14vh;
-            left: 2vw;
-            width: 15vw;
-            max-width: 150px;
+            top: 22vh;
+            left: 4vw;
+            width: 30vw;
+            max-width: 200px;
             min-width: 100px;
-            height: 1vh;
+            height: 1.5vh;
             background-color: rgba(255, 255, 255, 0.3);
             border-radius: 5px;
             overflow: hidden;
@@ -274,33 +291,33 @@
         }
         
         #level-complete {
-            position: absolute;
-            top: 40%;
+            position: fixed;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: 20px;
+            padding: 5vh 5vw;
             border-radius: 10px;
             text-align: center;
             display: none;
             z-index: 190;
-            min-width: 300px;
-            max-width: 90%;
+            width: 80%;
+            max-width: 500px;
         }
         
         #level-complete h2 {
-            margin-bottom: 10px;
-            font-size: calc(20px + 1vmin);
+            margin-bottom: 3vh;
+            font-size: calc(24px + 1vmin);
         }
         
         #level-complete p {
-            margin-bottom: 20px;
-            font-size: calc(16px + 0.5vmin);
+            margin-bottom: 4vh;
+            font-size: calc(16px + 0.8vmin);
         }
         
         #title-screen {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -308,70 +325,77 @@
             background: linear-gradient(to bottom, #1a2a6c, #b21f1f, #fdbb2d);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             z-index: 300;
+            overflow-y: auto;
+            padding: 4vh 0;
         }
         
         #title {
-            font-size: calc(24px + 2vmin);
+            font-size: calc(32px + 2vmin);
             color: white;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            margin-bottom: 3vh;
+            margin: 3vh 0;
             text-align: center;
             padding: 0 20px;
         }
         
         #high-score {
-            font-size: calc(16px + 0.8vmin);
+            font-size: calc(18px + 1vmin);
             color: gold;
-            margin-bottom: 2vh;
+            margin-bottom: 3vh;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
         
         #customization {
             background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px;
+            padding: 3vh 4vw;
             border-radius: 10px;
-            margin-bottom: 3vh;
-            width: 80%;
-            max-width: 400px;
+            margin: 2vh 0;
+            width: 90%;
+            max-width: 500px;
         }
         
         #customization h2 {
             color: white;
             text-align: center;
             margin-top: 0;
-            font-size: calc(16px + 0.5vmin);
-            margin-bottom: 15px;
+            font-size: calc(18px + 0.8vmin);
+            margin-bottom: 2vh;
         }
         
         .color-option {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 2vh;
         }
         
         .color-option label {
             color: white;
             flex: 1;
-            font-size: calc(14px + 0.2vmin);
+            font-size: calc(14px + 0.5vmin);
+            margin-right: 2vw;
         }
         
         .color-option input {
             flex: 1;
+            width: 100%;
+            height: 4vh;
+            min-height: 30px;
         }
         
         #start-game-btn {
-            padding: 15px 30px;
-            font-size: calc(16px + 0.5vmin);
+            padding: 2vh 6vw;
+            font-size: calc(18px + 0.8vmin);
             background-color: #FF5733;
             color: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.3s;
+            margin: 3vh 0;
         }
         
         #start-game-btn:hover {
@@ -379,45 +403,53 @@
             background-color: #FF7043;
         }
         
+        #start-game-btn:active {
+            transform: scale(0.95);
+        }
+        
         #level-selection {
             background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px;
+            padding: 3vh 4vw;
             border-radius: 10px;
-            margin-bottom: 3vh;
-            width: 80%;
-            max-width: 400px;
+            margin: 2vh 0;
+            width: 90%;
+            max-width: 500px;
             color: white;
             text-align: center;
         }
         
         #level-selection h2 {
             margin-top: 0;
-            font-size: calc(16px + 0.5vmin);
-            margin-bottom: 15px;
+            font-size: calc(18px + 0.8vmin);
+            margin-bottom: 2vh;
         }
         
         .level-buttons {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 2vmin;
+            margin-top: 2vh;
         }
         
         .level-btn {
-            width: calc(30px + 2vmin);
-            height: calc(30px + 2vmin);
+            width: calc(40px + 2vmin);
+            height: calc(40px + 2vmin);
             border-radius: 50%;
             background-color: #3498DB;
             color: white;
             border: none;
-            font-size: calc(14px + 0.4vmin);
+            font-size: calc(16px + 0.8vmin);
             cursor: pointer;
             transition: transform 0.2s;
         }
         
         .level-btn:hover {
             transform: scale(1.1);
+        }
+        
+        .level-btn:active {
+            transform: scale(0.9);
         }
         
         .level-btn.locked {
@@ -451,24 +483,134 @@
             pointer-events: none;
         }
         
+        #continue-playing {
+            position: fixed;
+            top: 4vh;
+            right: 4vw;
+            background-color: #FF5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 1vh 2vw;
+            font-size: calc(14px + 0.5vmin);
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+        }
+        
+        .touch-controls {
+            position: fixed;
+            bottom: 15vh;
+            right: 5vw;
+            z-index: 150;
+            display: none;
+        }
+        
+        #jetpack-btn {
+            width: 15vmin;
+            height: 15vmin;
+            background-color: rgba(255, 87, 51, 0.5);
+            border: 3px solid #FF5733;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: calc(12px + 1vmin);
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        #jetpack-btn:active {
+            background-color: rgba(255, 87, 51, 0.8);
+        }
+        
+        /* Mobile specific styles */
         @media (max-width: 768px) {
-            #title {
-                font-size: calc(24px + 1.5vmin);
+            .touch-controls {
+                display: block;
             }
             
-            #customization, #level-selection {
+            #level-complete, #game-over {
                 width: 90%;
-                padding: 15px;
+                padding: 4vh 4vw;
             }
             
             .btn {
-                padding: 8px 16px;
+                padding: 1.5vh 3vw;
+                margin: 1vh 1vw;
+                min-width: 40%;
+            }
+            
+            #level-indicator {
+                top: 14vh;
+            }
+            
+            #powerup-indicator {
+                top: 8vh;
+            }
+            
+            #level-progress {
+                top: 20vh;
+            }
+            
+            #title-screen {
+                justify-content: flex-start;
+                padding-top: 2vh;
+            }
+            
+            #title {
+                font-size: calc(28px + 1vmin);
+                margin: 2vh 0;
+            }
+            
+            #high-score {
+                margin-bottom: 2vh;
+            }
+            
+            #customization, #level-selection {
+                width: 95%;
+                padding: 2vh 3vw;
+                margin: 1vh 0;
+            }
+            
+            .level-buttons {
+                gap: 2vmin;
+            }
+            
+            #start-game-btn {
+                margin: 2vh 0;
+                padding: 1.5vh 5vw;
             }
         }
         
         @media (max-height: 600px) {
-            #level-progress {
-                top: 16vh;
+            #title-screen {
+                justify-content: flex-start;
+                padding-top: 1vh;
+            }
+            
+            #title {
+                margin: 1vh 0;
+            }
+            
+            #high-score {
+                margin-bottom: 1vh;
+            }
+            
+            #customization, #level-selection {
+                padding: 1.5vh 3vw;
+                margin: 1vh 0;
+            }
+            
+            .color-option {
+                margin-bottom: 1vh;
+            }
+            
+            #start-game-btn {
+                margin: 1vh 0;
             }
             
             #level-indicator {
@@ -476,7 +618,11 @@
             }
             
             #powerup-indicator {
-                top: 8vh;
+                top: 7vh;
+            }
+            
+            #level-progress {
+                top: 17vh;
             }
         }
     </style>
@@ -502,6 +648,7 @@
         <div id="level-progress">
             <div id="progress-bar"></div>
         </div>
+        <button id="continue-playing">Resume Game</button>
         <div id="level-complete">
             <h2>Level Complete!</h2>
             <p>You completed Level <span id="completed-level">1</span>!</p>
@@ -515,6 +662,10 @@
             <button id="restart-btn" class="btn">Play Again</button>
             <button id="menu-btn" class="btn">Main Menu</button>
         </div>
+    </div>
+
+    <div class="touch-controls">
+        <div id="jetpack-btn">TAP & HOLD</div>
     </div>
 
     <div id="title-screen">
@@ -575,6 +726,11 @@
             const highScoreDisplay = document.getElementById('high-score');
             const startGameBtn = document.getElementById('start-game-btn');
             const levelButtonsContainer = document.getElementById('level-buttons-container');
+            const continuePlayingBtn = document.getElementById('continue-playing');
+            const jetpackBtn = document.getElementById('jetpack-btn');
+            
+            // Mobile detection
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
             // Game dimensions
             let groundHeight, ceilingHeight, playerHeight, playerWidth, playerStartX;
@@ -586,11 +742,11 @@
                 const vw = window.innerWidth / 100;
                 const vmin = Math.min(vh, vw);
                 
-                groundHeight = 5 * vh;
-                ceilingHeight = 2 * vh;
-                playerHeight = 7 * vmin;
-                playerWidth = 5 * vmin;
-                playerStartX = 10 * vw;
+                groundHeight = 8 * vh;
+                ceilingHeight = 3 * vh;
+                playerHeight = 10 * vmin;
+                playerWidth = 7 * vmin;
+                playerStartX = 15 * vw;
                 
                 // Update player position
                 if (player) {
@@ -695,14 +851,20 @@
             let levelPaused = false;
             let animationFrameId = null;
             let gameActive = false;
-            let currentLevel = 1;
+            let currentLevel = parseInt(localStorage.getItem('currentLevel')) || 1;
             let distanceTraveled = 0;
-            let levelTarget = levels[0].distance;
-            let obstacleFrequency = levels[0].obstacleFrequency;
+            let levelTarget = levels[currentLevel - 1]?.distance || levels[0].distance;
+            let obstacleFrequency = levels[currentLevel - 1]?.obstacleFrequency || levels[0].obstacleFrequency;
             let completedLevels = JSON.parse(localStorage.getItem('completedLevels')) || [];
+            let hasSavedGame = localStorage.getItem('hasSavedGame') === 'true';
             
             // Update high score display
             highScoreDisplay.textContent = `High Score: ${highScore}`;
+            
+            // Check if there's a saved game
+            if (hasSavedGame) {
+                continuePlayingBtn.style.display = 'block';
+            }
             
             // Player state
             let hasShield = false;
@@ -744,13 +906,26 @@
                 }
             }
             
+            // Continue playing saved game
+            continuePlayingBtn.addEventListener('click', function() {
+                const savedLevel = parseInt(localStorage.getItem('currentLevel')) || 1;
+                const savedScore = parseInt(localStorage.getItem('savedScore')) || 0;
+                
+                selectLevel(savedLevel - 1, savedScore);
+            });
+            
             // Select level
-            function selectLevel(levelIndex) {
+            function selectLevel(levelIndex, savedScore = 0) {
                 currentLevel = levelIndex + 1;
                 levelTarget = levels[levelIndex].distance;
                 obstacleFrequency = levels[levelIndex].obstacleFrequency;
                 baseGameSpeed = levels[levelIndex].obstacleSpeed;
                 gameSpeed = baseGameSpeed;
+                
+                // Set score if continuing a saved game
+                if (savedScore > 0) {
+                    score = savedScore;
+                }
                 
                 // Set background color based on level
                 gameContainer.style.backgroundColor = levels[levelIndex].background;
@@ -758,14 +933,27 @@
                 // Generate background elements based on level
                 generateBackgroundElements(levelIndex);
                 
+                // Save current level
+                localStorage.setItem('currentLevel', currentLevel);
+                localStorage.setItem('hasSavedGame', 'true');
+                
                 startGame();
+            }
+            
+            // Save game state
+            function saveGameState() {
+                localStorage.setItem('currentLevel', currentLevel);
+                localStorage.setItem('savedScore', score);
+                localStorage.setItem('hasSavedGame', 'true');
             }
             
             // Generate background elements based on level
             function generateBackgroundElements(levelIndex) {
                 // Clear existing background elements
                 while (backgroundElements.length > 0) {
-                    gameContainer.removeChild(backgroundElements[0].element);
+                    if (backgroundElements[0].element.parentNode === gameContainer) {
+                        gameContainer.removeChild(backgroundElements[0].element);
+                    }
                     backgroundElements.shift();
                 }
                 
@@ -870,10 +1058,22 @@
             
             // Add game control event listeners
             function addGameControls() {
-                document.addEventListener('mousedown', activateJetpack);
-                document.addEventListener('mouseup', deactivateJetpack);
-                document.addEventListener('touchstart', activateJetpack);
-                document.addEventListener('touchend', deactivateJetpack);
+                if (isMobile) {
+                    // Mobile touch controls
+                    jetpackBtn.addEventListener('touchstart', activateJetpack);
+                    jetpackBtn.addEventListener('touchend', deactivateJetpack);
+                    
+                    // Prevent default behavior for touch events on the game container
+                    gameContainer.addEventListener('touchmove', function(e) {
+                        e.preventDefault();
+                    }, { passive: false });
+                } else {
+                    // Desktop controls
+                    document.addEventListener('mousedown', activateJetpack);
+                    document.addEventListener('mouseup', deactivateJetpack);
+                }
+                
+                // Keyboard controls work on both
                 document.addEventListener('keydown', function(e) {
                     if (e.code === 'Space') activateJetpack(e);
                 });
@@ -884,10 +1084,20 @@
             
             // Remove game control event listeners
             function removeGameControls() {
-                document.removeEventListener('mousedown', activateJetpack);
-                document.removeEventListener('mouseup', deactivateJetpack);
-                document.removeEventListener('touchstart', activateJetpack);
-                document.removeEventListener('touchend', deactivateJetpack);
+                if (isMobile) {
+                    jetpackBtn.removeEventListener('touchstart', activateJetpack);
+                    jetpackBtn.removeEventListener('touchend', deactivateJetpack);
+                } else {
+                    document.removeEventListener('mousedown', activateJetpack);
+                    document.removeEventListener('mouseup', deactivateJetpack);
+                }
+                
+                document.removeEventListener('keydown', function(e) {
+                    if (e.code === 'Space') activateJetpack(e);
+                });
+                document.removeEventListener('keyup', function(e) {
+                    if (e.code === 'Space') deactivateJetpack(e);
+                });
             }
             
             // Event handlers for buttons
@@ -899,11 +1109,41 @@
             continueBtn.addEventListener('click', continueToNextLevel);
             levelMenuBtn.addEventListener('click', showMainMenu);
             
+            // Make sure all buttons are properly set up for mobile
+            function setupButtonListeners() {
+                const buttons = document.querySelectorAll('.btn');
+                buttons.forEach(button => {
+                    // Remove any existing event listeners
+                    const newButton = button.cloneNode(true);
+                    button.parentNode.replaceChild(newButton, button);
+                    
+                    // Add appropriate event listener
+                    if (button.id === 'continue-btn') {
+                        newButton.addEventListener('click', continueToNextLevel);
+                    } else if (button.id === 'level-menu-btn') {
+                        newButton.addEventListener('click', showMainMenu);
+                    } else if (button.id === 'restart-btn') {
+                        newButton.addEventListener('click', restartGame);
+                    } else if (button.id === 'menu-btn') {
+                        newButton.addEventListener('click', showMainMenu);
+                    } else if (button.id === 'start-game-btn') {
+                        newButton.addEventListener('click', function() {
+                            selectLevel(0);
+                        });
+                    }
+                });
+            }
+            
+            // Set up buttons initially
+            setupButtonListeners();
+            
             function startGame() {
                 titleScreen.style.display = 'none';
+                continuePlayingBtn.style.display = 'none';
                 gameActive = true;
                 levelPaused = false;
                 levelIndicator.textContent = `Level: ${currentLevel}`;
+                scoreDisplay.textContent = `Score: ${score}`;
                 distanceTraveled = 0;
                 updateProgress();
                 
@@ -916,14 +1156,25 @@
             }
             
             function showMainMenu() {
+                // Save game state before going to menu
+                if (gameActive && !gameOver) {
+                    saveGameState();
+                }
+                
                 gameOverScreen.style.display = 'none';
                 levelCompleteMessage.style.display = 'none';
+                
+                if (hasSavedGame) {
+                    continuePlayingBtn.style.display = 'block';
+                }
+                
                 titleScreen.style.display = 'flex';
                 gameActive = false;
                 gameOver = false;
                 levelPaused = false;
                 resetGameState();
                 generateLevelButtons();
+                setupButtonListeners();
             }
             
             function continueToNextLevel() {
@@ -937,6 +1188,10 @@
                 baseGameSpeed = levels[currentLevel - 1].obstacleSpeed;
                 gameSpeed = baseGameSpeed;
                 distanceTraveled = 0;
+                
+                // Save current level
+                localStorage.setItem('currentLevel', currentLevel);
+                localStorage.setItem('hasSavedGame', 'true');
                 
                 // Update level indicator
                 levelIndicator.textContent = `Level: ${currentLevel}`;
@@ -996,7 +1251,7 @@
                         // Vertical laser
                         laserType = 'vertical';
                         laserClass = 'vertical-laser';
-                        width = 0.8 * vmin;
+                        width = 1.2 * vmin;
                         
                         // Determine height and position based on level
                         if (currentLevel <= 3) {
@@ -1044,12 +1299,12 @@
                         // Horizontal laser
                         laserType = 'horizontal';
                         laserClass = 'horizontal-laser';
-                        height = 0.8 * vmin;
-                        width = Math.random() < 0.3 ? 5 * vw : 10 * vw; // Sometimes shorter, sometimes longer
+                        height = 1.2 * vmin;
+                        width = Math.random() < 0.3 ? 8 * vw : 15 * vw; // Sometimes shorter, sometimes longer
                         
                         // Position horizontal lasers throughout the screen height
-                        const minBottom = groundHeight + 5 * vh;
-                        const maxBottom = containerHeight - ceilingHeight - 10 * vh;
+                        const minBottom = groundHeight + 8 * vh;
+                        const maxBottom = containerHeight - ceilingHeight - 15 * vh;
                         bottom = Math.floor(Math.random() * (maxBottom - minBottom)) + minBottom;
                     }
                     
@@ -1115,7 +1370,7 @@
                     const coin = document.createElement('div');
                     coin.className = 'coin';
                     
-                    const coinSize = 2 * Math.min(window.innerWidth, window.innerHeight) / 100;
+                    const coinSize = 4 * Math.min(window.innerWidth, window.innerHeight) / 100;
                     coin.style.width = `${coinSize}px`;
                     coin.style.height = `${coinSize}px`;
                     
@@ -1210,7 +1465,7 @@
                     const powerup = document.createElement('div');
                     powerup.className = 'powerup';
                     
-                    const powerupSize = 3 * Math.min(window.innerWidth, window.innerHeight) / 100;
+                    const powerupSize = 6 * Math.min(window.innerWidth, window.innerHeight) / 100;
                     powerup.style.width = `${powerupSize}px`;
                     powerup.style.height = `${powerupSize}px`;
                     
@@ -1280,7 +1535,9 @@
                     
                     // Remove obstacles that have gone off-screen
                     if (obstacles[i].position + obstacles[i].width < 0) {
-                        gameContainer.removeChild(obstacles[i].element);
+                        if (obstacles[i].element.parentNode === gameContainer) {
+                            gameContainer.removeChild(obstacles[i].element);
+                        }
                         
                         // Remove emitters
                         if (obstacles[i].emitters) {
@@ -1482,11 +1739,12 @@
                 effect.style.left = `${x}px`;
                 effect.style.bottom = `${y}px`;
                 effect.style.color = 'gold';
-                effect.style.fontSize = 'calc(14px + 0.4vmin)';
+                effect.style.fontSize = 'calc(18px + 0.6vmin)';
                 effect.style.fontWeight = 'bold';
                 effect.style.textShadow = '0 0 5px black';
                 effect.style.animation = 'float-up 1s forwards';
                 effect.style.pointerEvents = 'none';
+                effect.style.zIndex = '150';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1505,11 +1763,12 @@
                 effect.style.left = `${x}px`;
                 effect.style.bottom = `${y}px`;
                 effect.style.color = type === 'invincibility' ? '#FF9500' : '#3498DB';
-                effect.style.fontSize = 'calc(14px + 0.4vmin)';
+                effect.style.fontSize = 'calc(18px + 0.6vmin)';
                 effect.style.fontWeight = 'bold';
                 effect.style.textShadow = '0 0 5px black';
                 effect.style.animation = 'float-up 1s forwards';
                 effect.style.pointerEvents = 'none';
+                effect.style.zIndex = '150';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1525,14 +1784,15 @@
                 const effect = document.createElement('div');
                 effect.className = 'effect';
                 effect.style.position = 'absolute';
-                effect.style.width = '8vmin';
-                effect.style.height = '8vmin';
-                effect.style.left = `${playerStartX - 1.5 * vmin}px`;
-                effect.style.bottom = `${playerY - 0.5 * vmin}px`;
+                effect.style.width = '12vmin';
+                effect.style.height = '12vmin';
+                effect.style.left = `${playerStartX - 2.5 * vmin}px`;
+                effect.style.bottom = `${playerY - vmin}px`;
                 effect.style.borderRadius = '50%';
                 effect.style.border = '3px solid #3498DB';
                 effect.style.animation = 'shield-break 0.5s forwards';
                 effect.style.pointerEvents = 'none';
+                effect.style.zIndex = '150';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1548,14 +1808,15 @@
                 const effect = document.createElement('div');
                 effect.className = 'effect';
                 effect.style.position = 'absolute';
-                effect.style.width = '6vmin';
-                effect.style.height = '6vmin';
-                effect.style.left = `${x - 3 * vmin}px`;
-                effect.style.bottom = `${y - 3 * vmin}px`;
+                effect.style.width = '10vmin';
+                effect.style.height = '10vmin';
+                effect.style.left = `${x - 5 * vmin}px`;
+                effect.style.bottom = `${y - 5 * vmin}px`;
                 effect.style.borderRadius = '50%';
                 effect.style.background = 'radial-gradient(circle, #FF9500, #FF5733)';
                 effect.style.animation = 'explosion 0.5s forwards';
                 effect.style.pointerEvents = 'none';
+                effect.style.zIndex = '150';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1621,6 +1882,11 @@
                 score++;
                 distanceTraveled += gameSpeed;
                 
+                // Periodically save game progress
+                if (score % 300 === 0) { // Save every ~5 seconds
+                    saveGameState();
+                }
+                
                 updateProgress();
                 
                 // Check for level completion
@@ -1646,6 +1912,12 @@
                 // Pause the game
                 levelPaused = true;
                 
+                // Cancel the animation frame to truly pause the game
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                
                 // Update level complete message
                 completedLevelSpan.textContent = currentLevel;
                 nextLevelSpan.textContent = currentLevel + 1;
@@ -1665,12 +1937,19 @@
                 
                 // Show level complete screen
                 levelCompleteMessage.style.display = 'block';
+                
+                // Re-setup button listeners to ensure they work properly
+                setupButtonListeners();
             }
             
             function endGame() {
                 gameOver = true;
                 gameActive = false;
                 finalScoreDisplay.textContent = `Your Score: ${score}`;
+                
+                // Clear saved game state
+                localStorage.removeItem('hasSavedGame');
+                localStorage.removeItem('savedScore');
                 
                 // Check for high score
                 if (score > highScore) {
@@ -1691,6 +1970,9 @@
                     cancelAnimationFrame(animationFrameId);
                     animationFrameId = null;
                 }
+                
+                // Re-setup button listeners to ensure they work properly
+                setupButtonListeners();
             }
             
             function resetGameState() {
@@ -1774,6 +2056,11 @@
                 player.style.transform = 'rotate(0deg)';
                 document.querySelector('.player-arm.left').style.transform = 'rotate(0deg)';
                 document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
+                
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
             }
             
             function restartGame() {
@@ -1786,6 +2073,10 @@
                 obstacleFrequency = levels[0].obstacleFrequency;
                 baseGameSpeed = levels[0].obstacleSpeed;
                 gameSpeed = baseGameSpeed;
+                
+                // Save level 1 as current level
+                localStorage.setItem('currentLevel', 1);
+                localStorage.setItem('hasSavedGame', 'true');
                 
                 // Update level indicator
                 levelIndicator.textContent = `Level: ${currentLevel}`;
@@ -1859,6 +2150,27 @@
             
             // Generate initial level buttons
             generateLevelButtons();
+            
+            // Apply fixed positioning for mobile
+            if (isMobile) {
+                document.body.style.position = 'fixed';
+                document.body.style.overflow = 'hidden';
+            }
+            
+            // Handle mobile-specific touch events
+            if (isMobile) {
+                // Prevent scrolling
+                document.addEventListener('touchmove', function(e) {
+                    if (e.touches.length > 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                // Prevent zooming
+                document.addEventListener('gesturestart', function(e) {
+                    e.preventDefault();
+                });
+            }
         });
     </script>
 </body>
