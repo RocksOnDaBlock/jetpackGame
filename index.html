@@ -156,6 +156,12 @@
             z-index: 45;
         }
         
+        .magnet-coin {
+            background-color: #FFD700;
+            box-shadow: 0 0 10px #FFD700;
+            animation: pulse-gold 1.5s infinite alternate;
+        }
+        
         .powerup {
             position: absolute;
             width: 6vmin;
@@ -171,6 +177,68 @@
         
         .shield {
             background-color: #3498DB;
+        }
+        
+        .magnet {
+            background-color: #E74C3C;
+            border-radius: 50% 50% 0 0;
+            width: 6vmin;
+            height: 6vmin;
+        }
+        
+        .magnet::after {
+            content: '';
+            position: absolute;
+            bottom: -1vmin;
+            left: 1vmin;
+            width: 4vmin;
+            height: 1vmin;
+            background-color: #E74C3C;
+            border-radius: 0 0 2px 2px;
+        }
+        
+        .time-slow {
+            background-color: #9B59B6;
+            border-radius: 50%;
+        }
+        
+        .time-slow::before {
+            content: '';
+            position: absolute;
+            top: 1vmin;
+            left: 3vmin;
+            width: 0.5vmin;
+            height: 2.5vmin;
+            background-color: white;
+            transform-origin: bottom;
+            transform: rotate(-60deg);
+        }
+        
+        .time-slow::after {
+            content: '';
+            position: absolute;
+            top: 1vmin;
+            left: 3vmin;
+            width: 0.5vmin;
+            height: 2vmin;
+            background-color: white;
+            transform-origin: bottom;
+            transform: rotate(60deg);
+        }
+        
+        .score-multiplier {
+            background-color: #2ECC71;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            font-size: 3vmin;
+        }
+        
+        .score-multiplier::before {
+            content: '2x';
+            position: absolute;
         }
         
         .ground {
@@ -200,6 +268,18 @@
             font-size: calc(16px + 1vmin);
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        #multiplier-display {
+            position: absolute;
+            top: 4vh;
+            right: 4vw;
+            color: #2ECC71;
+            font-size: calc(16px + 1vmin);
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-weight: bold;
+            display: none;
         }
         
         #game-over {
@@ -498,41 +578,46 @@
             display: none;
         }
         
-        .touch-controls {
-            position: fixed;
-            bottom: 15vh;
-            right: 5vw;
-            z-index: 150;
+        #time-slow-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(155, 89, 182, 0.2);
+            pointer-events: none;
+            z-index: 80;
             display: none;
         }
         
-        #jetpack-btn {
-            width: 15vmin;
-            height: 15vmin;
-            background-color: rgba(255, 87, 51, 0.5);
-            border: 3px solid #FF5733;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .touch-instruction {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             color: white;
-            font-size: calc(12px + 1vmin);
+            font-size: calc(20px + 1vmin);
             text-align: center;
-            cursor: pointer;
-            user-select: none;
-            touch-action: manipulation;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            opacity: 0.8;
+            z-index: 90;
+            pointer-events: none;
+            animation: fade-out 3s forwards;
         }
         
-        #jetpack-btn:active {
-            background-color: rgba(255, 87, 51, 0.8);
+        #magnet-effect {
+            position: absolute;
+            width: 30vmin;
+            height: 30vmin;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 60%, rgba(231, 76, 60, 0.2) 70%, transparent 90%);
+            z-index: 45;
+            pointer-events: none;
+            display: none;
         }
         
         /* Mobile specific styles */
         @media (max-width: 768px) {
-            .touch-controls {
-                display: block;
-            }
-            
             #level-complete, #game-over {
                 width: 90%;
                 padding: 4vh 4vw;
@@ -625,6 +710,49 @@
                 top: 17vh;
             }
         }
+        
+        @keyframes float-up {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        
+        @keyframes shield-break {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        @keyframes explosion {
+            0% { transform: scale(0.5); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 10px gold; }
+            100% { box-shadow: 0 0 20px gold; }
+        }
+        
+        @keyframes shine {
+            0% { box-shadow: 0 0 5px gold; }
+            100% { box-shadow: 0 0 15px gold; }
+        }
+        
+        @keyframes laser-pulse {
+            0% { opacity: 0.7; box-shadow: 0 0 10px #FF005C; }
+            100% { opacity: 1; box-shadow: 0 0 15px #FF005C; }
+        }
+        
+        @keyframes fade-out {
+            0% { opacity: 0.8; }
+            70% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -643,11 +771,14 @@
         <div class="ground"></div>
         <div class="ceiling"></div>
         <div id="score-display">Score: 0</div>
+        <div id="multiplier-display">x2</div>
         <div id="powerup-indicator"></div>
         <div id="level-indicator">Level: 1</div>
         <div id="level-progress">
             <div id="progress-bar"></div>
         </div>
+        <div id="magnet-effect"></div>
+        <div id="time-slow-overlay"></div>
         <button id="continue-playing">Resume Game</button>
         <div id="level-complete">
             <h2>Level Complete!</h2>
@@ -662,10 +793,6 @@
             <button id="restart-btn" class="btn">Play Again</button>
             <button id="menu-btn" class="btn">Main Menu</button>
         </div>
-    </div>
-
-    <div class="touch-controls">
-        <div id="jetpack-btn">TAP & HOLD</div>
     </div>
 
     <div id="title-screen">
@@ -709,6 +836,7 @@
             const player = document.getElementById('player');
             const jetpackFlame = document.querySelector('.jetpack-flame');
             const scoreDisplay = document.getElementById('score-display');
+            const multiplierDisplay = document.getElementById('multiplier-display');
             const gameOverScreen = document.getElementById('game-over');
             const finalScoreDisplay = document.getElementById('final-score');
             const newHighScoreText = document.getElementById('new-high-score');
@@ -727,10 +855,25 @@
             const startGameBtn = document.getElementById('start-game-btn');
             const levelButtonsContainer = document.getElementById('level-buttons-container');
             const continuePlayingBtn = document.getElementById('continue-playing');
-            const jetpackBtn = document.getElementById('jetpack-btn');
+            const timeSlowOverlay = document.getElementById('time-slow-overlay');
+            const magnetEffect = document.getElementById('magnet-effect');
             
             // Mobile detection
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Show touch instruction if on mobile
+            if (isMobile) {
+                const touchInstruction = document.createElement('div');
+                touchInstruction.className = 'touch-instruction';
+                touchInstruction.textContent = 'TAP & HOLD ANYWHERE TO FLY';
+                gameContainer.appendChild(touchInstruction);
+                
+                setTimeout(() => {
+                    if (touchInstruction.parentNode === gameContainer) {
+                        gameContainer.removeChild(touchInstruction);
+                    }
+                }, 3000);
+            }
             
             // Game dimensions
             let groundHeight, ceilingHeight, playerHeight, playerWidth, playerStartX;
@@ -841,7 +984,9 @@
             let jetpackForce = 0.8;
             let gameSpeed = 5;
             let baseGameSpeed = 5;
+            let originalGameSpeed = 5;
             let score = 0;
+            let scoreMultiplier = 1;
             let highScore = localStorage.getItem('highScore') || 0;
             let obstacles = [];
             let coins = [];
@@ -872,6 +1017,12 @@
             let isInvincible = false;
             let invincibilityTimeLeft = 0;
             let invincibilityGracePeriod = 0;
+            let hasCoinMagnet = false;
+            let coinMagnetTimeLeft = 0;
+            let hasTimeSlow = false;
+            let timeSlowTimeLeft = 0;
+            let hasScoreMultiplier = false;
+            let scoreMultiplierTimeLeft = 0;
             
             // Initialize player position
             player.style.bottom = `${groundHeight + 10}px`;
@@ -921,6 +1072,7 @@
                 obstacleFrequency = levels[levelIndex].obstacleFrequency;
                 baseGameSpeed = levels[levelIndex].obstacleSpeed;
                 gameSpeed = baseGameSpeed;
+                originalGameSpeed = baseGameSpeed;
                 
                 // Set score if continuing a saved game
                 if (savedScore > 0) {
@@ -1056,12 +1208,12 @@
                 document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
             }
             
-            // Add game control event listeners
+            // Add game control event listeners for whole screen
             function addGameControls() {
                 if (isMobile) {
-                    // Mobile touch controls
-                    jetpackBtn.addEventListener('touchstart', activateJetpack);
-                    jetpackBtn.addEventListener('touchend', deactivateJetpack);
+                    // Mobile touch controls - entire screen
+                    gameContainer.addEventListener('touchstart', activateJetpack);
+                    gameContainer.addEventListener('touchend', deactivateJetpack);
                     
                     // Prevent default behavior for touch events on the game container
                     gameContainer.addEventListener('touchmove', function(e) {
@@ -1069,8 +1221,8 @@
                     }, { passive: false });
                 } else {
                     // Desktop controls
-                    document.addEventListener('mousedown', activateJetpack);
-                    document.addEventListener('mouseup', deactivateJetpack);
+                    gameContainer.addEventListener('mousedown', activateJetpack);
+                    gameContainer.addEventListener('mouseup', deactivateJetpack);
                 }
                 
                 // Keyboard controls work on both
@@ -1085,11 +1237,11 @@
             // Remove game control event listeners
             function removeGameControls() {
                 if (isMobile) {
-                    jetpackBtn.removeEventListener('touchstart', activateJetpack);
-                    jetpackBtn.removeEventListener('touchend', deactivateJetpack);
+                    gameContainer.removeEventListener('touchstart', activateJetpack);
+                    gameContainer.removeEventListener('touchend', deactivateJetpack);
                 } else {
-                    document.removeEventListener('mousedown', activateJetpack);
-                    document.removeEventListener('mouseup', deactivateJetpack);
+                    gameContainer.removeEventListener('mousedown', activateJetpack);
+                    gameContainer.removeEventListener('mouseup', deactivateJetpack);
                 }
                 
                 document.removeEventListener('keydown', function(e) {
@@ -1118,15 +1270,15 @@
                     button.parentNode.replaceChild(newButton, button);
                     
                     // Add appropriate event listener
-                    if (button.id === 'continue-btn') {
+                    if (newButton.id === 'continue-btn') {
                         newButton.addEventListener('click', continueToNextLevel);
-                    } else if (button.id === 'level-menu-btn') {
+                    } else if (newButton.id === 'level-menu-btn') {
                         newButton.addEventListener('click', showMainMenu);
-                    } else if (button.id === 'restart-btn') {
+                    } else if (newButton.id === 'restart-btn') {
                         newButton.addEventListener('click', restartGame);
-                    } else if (button.id === 'menu-btn') {
+                    } else if (newButton.id === 'menu-btn') {
                         newButton.addEventListener('click', showMainMenu);
-                    } else if (button.id === 'start-game-btn') {
+                    } else if (newButton.id === 'start-game-btn') {
                         newButton.addEventListener('click', function() {
                             selectLevel(0);
                         });
@@ -1187,6 +1339,7 @@
                 obstacleFrequency = levels[currentLevel - 1].obstacleFrequency;
                 baseGameSpeed = levels[currentLevel - 1].obstacleSpeed;
                 gameSpeed = baseGameSpeed;
+                originalGameSpeed = baseGameSpeed;
                 distanceTraveled = 0;
                 
                 // Save current level
@@ -1235,6 +1388,12 @@
                 // Apply tilt based on velocity
                 const tiltAngle = Math.max(-20, Math.min(20, playerVelocity * 2));
                 player.style.transform = `rotate(${tiltAngle}deg)`;
+                
+                // Update magnet effect position if active
+                if (hasCoinMagnet) {
+                    magnetEffect.style.left = `${playerStartX - 15 * vmin}px`;
+                    magnetEffect.style.bottom = `${playerY - 15 * vmin + playerHeight / 2}px`;
+                }
             }
             
             function createObstacle() {
@@ -1370,6 +1529,12 @@
                     const coin = document.createElement('div');
                     coin.className = 'coin';
                     
+                    // Special magnet coin with 15% chance or if we're in higher levels
+                    const isMagnetCoin = Math.random() < 0.15 || currentLevel > 5;
+                    if (isMagnetCoin) {
+                        coin.classList.add('magnet-coin');
+                    }
+                    
                     const coinSize = 4 * Math.min(window.innerWidth, window.innerHeight) / 100;
                     coin.style.width = `${coinSize}px`;
                     coin.style.height = `${coinSize}px`;
@@ -1398,6 +1563,9 @@
                                     if (gameActive && !gameOver && !levelPaused) {
                                         const extraCoin = document.createElement('div');
                                         extraCoin.className = 'coin';
+                                        if (isMagnetCoin) {
+                                            extraCoin.classList.add('magnet-coin');
+                                        }
                                         extraCoin.style.width = `${coinSize}px`;
                                         extraCoin.style.height = `${coinSize}px`;
                                         extraCoin.style.bottom = `${bottom}px`;
@@ -1407,7 +1575,8 @@
                                             element: extraCoin,
                                             position: gameContainer.clientWidth,
                                             bottom: bottom,
-                                            size: coinSize
+                                            size: coinSize,
+                                            isMagnetCoin: isMagnetCoin
                                         });
                                     }
                                 }, i * 200);
@@ -1424,6 +1593,9 @@
                                     if (gameActive && !gameOver && !levelPaused) {
                                         const extraCoin = document.createElement('div');
                                         extraCoin.className = 'coin';
+                                        if (isMagnetCoin) {
+                                            extraCoin.classList.add('magnet-coin');
+                                        }
                                         extraCoin.style.width = `${coinSize}px`;
                                         extraCoin.style.height = `${coinSize}px`;
                                         extraCoin.style.bottom = `${baseBottom + (i * coinSize * 2)}px`;
@@ -1433,7 +1605,8 @@
                                             element: extraCoin,
                                             position: gameContainer.clientWidth,
                                             bottom: baseBottom + (i * coinSize * 2),
-                                            size: coinSize
+                                            size: coinSize,
+                                            isMagnetCoin: isMagnetCoin
                                         });
                                     }
                                 }, i * 200);
@@ -1445,14 +1618,17 @@
                     coin.style.left = `${gameContainer.clientWidth}px`;
                     
                     // Add shine animation
-                    coin.style.animation = 'shine 1s infinite alternate';
+                    if (!isMagnetCoin) {
+                        coin.style.animation = 'shine 1s infinite alternate';
+                    }
                     
                     gameContainer.appendChild(coin);
                     coins.push({
                         element: coin,
                         position: gameContainer.clientWidth,
                         bottom: bottom,
-                        size: coinSize
+                        size: coinSize,
+                        isMagnetCoin: isMagnetCoin
                     });
                 }
             }
@@ -1469,18 +1645,36 @@
                     powerup.style.width = `${powerupSize}px`;
                     powerup.style.height = `${powerupSize}px`;
                     
-                    // In higher levels, shields become rarer
-                    const typeChance = Math.max(0.3, 0.6 - (currentLevel * 0.03));
-                    const type = Math.random() < typeChance ? 'shield' : 'invincibility';
-                    powerup.classList.add(type);
+                    // Choose a powerup type based on probabilities
+                    let type;
+                    const rand = Math.random();
+                    
+                    if (rand < 0.25) {
+                        type = 'shield';
+                        powerup.classList.add('shield');
+                    } else if (rand < 0.5) {
+                        type = 'invincibility';
+                        powerup.classList.add('invincibility');
+                    } else if (rand < 0.7) {
+                        type = 'magnet';
+                        powerup.classList.add('magnet');
+                    } else if (rand < 0.9) {
+                        type = 'time-slow';
+                        powerup.classList.add('time-slow');
+                    } else {
+                        type = 'score-multiplier';
+                        powerup.classList.add('score-multiplier');
+                    }
                     
                     const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - powerupSize)) + groundHeight;
                     
                     powerup.style.bottom = `${bottom}px`;
                     powerup.style.left = `${gameContainer.clientWidth}px`;
                     
-                    // Add pulsing animation
-                    powerup.style.animation = 'pulse 1.5s infinite';
+                    // Add pulsing animation except for custom styled powerups
+                    if (type !== 'score-multiplier') {
+                        powerup.style.animation = 'pulse 1.5s infinite';
+                    }
                     
                     gameContainer.appendChild(powerup);
                     powerups.push({
@@ -1556,11 +1750,41 @@
             
             function moveCoins() {
                 for (let i = 0; i < coins.length; i++) {
-                    coins[i].position -= gameSpeed;
+                    // Normal movement or magnet effect
+                    if (hasCoinMagnet && 
+                        coins[i].position < gameContainer.clientWidth - 100 && 
+                        coins[i].position > 0) {
+                        
+                        // Calculate distance to player
+                        const coinX = coins[i].position;
+                        const coinY = coins[i].bottom;
+                        const playerX = playerStartX;
+                        const playerY = playerY;
+                        
+                        const dx = playerX - coinX;
+                        const dy = playerY - coinY;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Apply magnet effect if within range
+                        if (distance < 150) {
+                            const angle = Math.atan2(dy, dx);
+                            const magnetForce = Math.max(1, 10 - distance / 20);
+                            
+                            coins[i].position += Math.cos(angle) * magnetForce;
+                            coins[i].bottom += Math.sin(angle) * magnetForce;
+                            
+                            coins[i].element.style.bottom = `${coins[i].bottom}px`;
+                        } else {
+                            coins[i].position -= gameSpeed;
+                        }
+                    } else {
+                        coins[i].position -= gameSpeed;
+                    }
+                    
                     coins[i].element.style.left = `${coins[i].position}px`;
                     
                     // Remove coins that have gone off-screen
-                    if (coins[i].position < 0) {
+                    if (coins[i].position < -50) {
                         if (coins[i].element.parentNode === gameContainer) {
                             gameContainer.removeChild(coins[i].element);
                         }
@@ -1685,14 +1909,24 @@
                     if (playerRight > coinLeft && playerLeft < coinRight &&
                         playerBottom > coinTop && playerTop < coinBottom) {
                         
+                        // Check if it's a magnet coin
+                        if (coins[i].isMagnetCoin) {
+                            // Activate coin magnet powerup
+                            hasCoinMagnet = true;
+                            coinMagnetTimeLeft = 10 * 60; // 10 seconds
+                            magnetEffect.style.display = 'block';
+                            createPowerupCollectEffect('magnet', coins[i].position, coins[i].bottom);
+                        }
+                        
                         // Collect coin with effect
-                        createCoinCollectEffect(coins[i].position, coins[i].bottom);
+                        const pointsEarned = 10 * scoreMultiplier;
+                        createCoinCollectEffect(coins[i].position, coins[i].bottom, pointsEarned);
                         
                         if (coins[i].element.parentNode === gameContainer) {
                             gameContainer.removeChild(coins[i].element);
                         }
                         coins.splice(i, 1);
-                        score += 10;
+                        score += pointsEarned;
                         scoreDisplay.textContent = `Score: ${score}`;
                         i--;
                     }
@@ -1710,15 +1944,30 @@
                         playerBottom > powerupTop && playerTop < powerupBottom) {
                         
                         // Apply powerup with effect
-                        createPowerupCollectEffect(powerups[i].type, powerups[i].position, powerups[i].bottom);
+                        const type = powerups[i].type;
+                        createPowerupCollectEffect(type, powerups[i].position, powerups[i].bottom);
                         
-                        if (powerups[i].type === 'invincibility') {
+                        if (type === 'invincibility') {
                             isInvincible = true;
                             invincibilityTimeLeft = 5 * 60; // 5 seconds at 60fps
                             invincibilityGracePeriod = 2 * 60; // 2 additional seconds of grace
-                        } else if (powerups[i].type === 'shield') {
+                        } else if (type === 'shield') {
                             hasShield = true;
                             shieldTimeLeft = 10 * 60; // 10 seconds at 60fps
+                        } else if (type === 'magnet') {
+                            hasCoinMagnet = true;
+                            coinMagnetTimeLeft = 15 * 60; // 15 seconds
+                            magnetEffect.style.display = 'block';
+                        } else if (type === 'time-slow') {
+                            hasTimeSlow = true;
+                            timeSlowTimeLeft = 8 * 60; // 8 seconds
+                            gameSpeed = originalGameSpeed * 0.6; // Slow by 40%
+                            timeSlowOverlay.style.display = 'block';
+                        } else if (type === 'score-multiplier') {
+                            hasScoreMultiplier = true;
+                            scoreMultiplier = 2;
+                            scoreMultiplierTimeLeft = 15 * 60; // 15 seconds
+                            multiplierDisplay.style.display = 'block';
                         }
                         
                         if (powerups[i].element.parentNode === gameContainer) {
@@ -1731,14 +1980,14 @@
                 }
             }
             
-            function createCoinCollectEffect(x, y) {
+            function createCoinCollectEffect(x, y, points) {
                 const effect = document.createElement('div');
                 effect.className = 'effect';
-                effect.textContent = '+10';
+                effect.textContent = `+${points}`;
                 effect.style.position = 'absolute';
                 effect.style.left = `${x}px`;
                 effect.style.bottom = `${y}px`;
-                effect.style.color = 'gold';
+                effect.style.color = scoreMultiplier > 1 ? '#2ECC71' : 'gold';
                 effect.style.fontSize = 'calc(18px + 0.6vmin)';
                 effect.style.fontWeight = 'bold';
                 effect.style.textShadow = '0 0 5px black';
@@ -1758,11 +2007,28 @@
             function createPowerupCollectEffect(type, x, y) {
                 const effect = document.createElement('div');
                 effect.className = 'effect';
-                effect.textContent = type === 'invincibility' ? 'Invincibility!' : 'Shield!';
+                
+                // Set text and color based on powerup type
+                if (type === 'invincibility') {
+                    effect.textContent = 'Invincibility!';
+                    effect.style.color = '#FF9500';
+                } else if (type === 'shield') {
+                    effect.textContent = 'Shield!';
+                    effect.style.color = '#3498DB';
+                } else if (type === 'magnet') {
+                    effect.textContent = 'Coin Magnet!';
+                    effect.style.color = '#E74C3C';
+                } else if (type === 'time-slow') {
+                    effect.textContent = 'Time Slow!';
+                    effect.style.color = '#9B59B6';
+                } else if (type === 'score-multiplier') {
+                    effect.textContent = '2x Score!';
+                    effect.style.color = '#2ECC71';
+                }
+                
                 effect.style.position = 'absolute';
                 effect.style.left = `${x}px`;
                 effect.style.bottom = `${y}px`;
-                effect.style.color = type === 'invincibility' ? '#FF9500' : '#3498DB';
                 effect.style.fontSize = 'calc(18px + 0.6vmin)';
                 effect.style.fontWeight = 'bold';
                 effect.style.textShadow = '0 0 5px black';
@@ -1828,6 +2094,7 @@
             }
             
             function updatePowerupStatus() {
+                // Update invincibility
                 if (invincibilityTimeLeft > 0) {
                     invincibilityTimeLeft--;
                     if (invincibilityTimeLeft === 0) {
@@ -1835,14 +2102,45 @@
                     }
                 }
                 
+                // Update invincibility grace period
                 if (invincibilityGracePeriod > 0 && invincibilityTimeLeft === 0) {
                     invincibilityGracePeriod--;
                 }
                 
+                // Update shield
                 if (shieldTimeLeft > 0) {
                     shieldTimeLeft--;
                     if (shieldTimeLeft === 0) {
                         hasShield = false;
+                    }
+                }
+                
+                // Update coin magnet
+                if (coinMagnetTimeLeft > 0) {
+                    coinMagnetTimeLeft--;
+                    if (coinMagnetTimeLeft === 0) {
+                        hasCoinMagnet = false;
+                        magnetEffect.style.display = 'none';
+                    }
+                }
+                
+                // Update time slow
+                if (timeSlowTimeLeft > 0) {
+                    timeSlowTimeLeft--;
+                    if (timeSlowTimeLeft === 0) {
+                        hasTimeSlow = false;
+                        gameSpeed = originalGameSpeed;
+                        timeSlowOverlay.style.display = 'none';
+                    }
+                }
+                
+                // Update score multiplier
+                if (scoreMultiplierTimeLeft > 0) {
+                    scoreMultiplierTimeLeft--;
+                    if (scoreMultiplierTimeLeft === 0) {
+                        hasScoreMultiplier = false;
+                        scoreMultiplier = 1;
+                        multiplierDisplay.style.display = 'none';
                     }
                 }
                 
@@ -1872,14 +2170,26 @@
                 }
                 
                 if (hasShield) {
-                    indicatorText += `Shield: ${Math.ceil(shieldTimeLeft / 60)}s`;
+                    indicatorText += `Shield: ${Math.ceil(shieldTimeLeft / 60)}s `;
+                }
+                
+                if (hasCoinMagnet) {
+                    indicatorText += `Coin Magnet: ${Math.ceil(coinMagnetTimeLeft / 60)}s `;
+                }
+                
+                if (hasTimeSlow) {
+                    indicatorText += `Time Slow: ${Math.ceil(timeSlowTimeLeft / 60)}s `;
+                }
+                
+                if (hasScoreMultiplier) {
+                    indicatorText += `2x Score: ${Math.ceil(scoreMultiplierTimeLeft / 60)}s`;
                 }
                 
                 powerupIndicator.textContent = indicatorText;
             }
             
             function updateScore() {
-                score++;
+                score += scoreMultiplier;
                 distanceTraveled += gameSpeed;
                 
                 // Periodically save game progress
@@ -1946,10 +2256,6 @@
                 gameOver = true;
                 gameActive = false;
                 finalScoreDisplay.textContent = `Your Score: ${score}`;
-                
-                // Clear saved game state
-                localStorage.removeItem('hasSavedGame');
-                localStorage.removeItem('savedScore');
                 
                 // Check for high score
                 if (score > highScore) {
@@ -2029,14 +2335,27 @@
                 playerVelocity = 0;
                 gameSpeed = 5;
                 baseGameSpeed = 5;
+                originalGameSpeed = 5;
                 score = 0;
+                scoreMultiplier = 1;
                 distanceTraveled = 0;
                 hasShield = false;
                 shieldTimeLeft = 0;
                 isInvincible = false;
                 invincibilityTimeLeft = 0;
                 invincibilityGracePeriod = 0;
+                hasCoinMagnet = false;
+                coinMagnetTimeLeft = 0;
+                hasTimeSlow = false;
+                timeSlowTimeLeft = 0;
+                hasScoreMultiplier = false;
+                scoreMultiplierTimeLeft = 0;
+                
+                // Reset visual effects
                 player.style.boxShadow = 'none';
+                magnetEffect.style.display = 'none';
+                timeSlowOverlay.style.display = 'none';
+                multiplierDisplay.style.display = 'none';
                 
                 // Reset game container color
                 gameContainer.style.backgroundColor = '#87CEEB';
@@ -2068,21 +2387,34 @@
                 gameOver = false;
                 gameActive = true;
                 levelPaused = false;
-                currentLevel = 1;
-                levelTarget = levels[0].distance;
-                obstacleFrequency = levels[0].obstacleFrequency;
-                baseGameSpeed = levels[0].obstacleSpeed;
-                gameSpeed = baseGameSpeed;
                 
-                // Save level 1 as current level
-                localStorage.setItem('currentLevel', 1);
+                // Start from the same level player died at, not level 1
+                if (localStorage.getItem('currentLevel')) {
+                    currentLevel = parseInt(localStorage.getItem('currentLevel'));
+                } else {
+                    currentLevel = 1;
+                }
+                
+                // Get the level data
+                const levelIndex = currentLevel - 1;
+                levelTarget = levels[levelIndex].distance;
+                obstacleFrequency = levels[levelIndex].obstacleFrequency;
+                baseGameSpeed = levels[levelIndex].obstacleSpeed;
+                gameSpeed = baseGameSpeed;
+                originalGameSpeed = baseGameSpeed;
+                
+                // Set background color
+                gameContainer.style.backgroundColor = levels[levelIndex].background;
+                
+                // Save current level
+                localStorage.setItem('currentLevel', currentLevel);
                 localStorage.setItem('hasSavedGame', 'true');
                 
                 // Update level indicator
                 levelIndicator.textContent = `Level: ${currentLevel}`;
                 
                 // Generate background elements
-                generateBackgroundElements(0);
+                generateBackgroundElements(levelIndex);
                 
                 addGameControls();
                 gameLoop();
@@ -2105,43 +2437,6 @@
                     animationFrameId = requestAnimationFrame(gameLoop);
                 }
             }
-            
-            // Add CSS animations
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes float-up {
-                    0% { transform: translateY(0); opacity: 1; }
-                    100% { transform: translateY(-50px); opacity: 0; }
-                }
-                
-                @keyframes shield-break {
-                    0% { transform: scale(1); opacity: 1; }
-                    100% { transform: scale(2); opacity: 0; }
-                }
-                
-                @keyframes explosion {
-                    0% { transform: scale(0.5); opacity: 1; }
-                    50% { transform: scale(1.2); opacity: 0.8; }
-                    100% { transform: scale(1.5); opacity: 0; }
-                }
-                
-                @keyframes pulse {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(1.1); }
-                    100% { transform: scale(1); }
-                }
-                
-                @keyframes shine {
-                    0% { box-shadow: 0 0 5px gold; }
-                    100% { box-shadow: 0 0 15px gold; }
-                }
-                
-                @keyframes laser-pulse {
-                    0% { opacity: 0.7; box-shadow: 0 0 10px #FF005C; }
-                    100% { opacity: 1; box-shadow: 0 0 15px #FF005C; }
-                }
-            `;
-            document.head.appendChild(style);
             
             // Get viewport unit equivalents for calculations
             const vh = window.innerHeight / 100;
