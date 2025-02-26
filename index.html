@@ -605,14 +605,15 @@
             animation: fade-out 3s forwards;
         }
         
-        #magnet-effect {
+        #magnet-radius {
             position: absolute;
-            width: 30vmin;
-            height: 30vmin;
+            width: 200px;
+            height: 200px;
+            border: 2px dashed #E74C3C;
             border-radius: 50%;
-            background: radial-gradient(circle, transparent 60%, rgba(231, 76, 60, 0.2) 70%, transparent 90%);
-            z-index: 45;
             pointer-events: none;
+            z-index: 45;
+            opacity: 0.5;
             display: none;
         }
         
@@ -777,7 +778,7 @@
         <div id="level-progress">
             <div id="progress-bar"></div>
         </div>
-        <div id="magnet-effect"></div>
+        <div id="magnet-radius"></div>
         <div id="time-slow-overlay"></div>
         <button id="continue-playing">Resume Game</button>
         <div id="level-complete">
@@ -856,7 +857,7 @@
             const levelButtonsContainer = document.getElementById('level-buttons-container');
             const continuePlayingBtn = document.getElementById('continue-playing');
             const timeSlowOverlay = document.getElementById('time-slow-overlay');
-            const magnetEffect = document.getElementById('magnet-effect');
+            const magnetRadius = document.getElementById('magnet-radius');
             
             // Mobile detection
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -1212,8 +1213,8 @@
             function addGameControls() {
                 if (isMobile) {
                     // Mobile touch controls - entire screen
-                    gameContainer.addEventListener('touchstart', activateJetpack);
-                    gameContainer.addEventListener('touchend', deactivateJetpack);
+                    gameContainer.addEventListener('touchstart', activateJetpack, {passive: false});
+                    gameContainer.addEventListener('touchend', deactivateJetpack, {passive: false});
                     
                     // Prevent default behavior for touch events on the game container
                     gameContainer.addEventListener('touchmove', function(e) {
@@ -1226,12 +1227,16 @@
                 }
                 
                 // Keyboard controls work on both
-                document.addEventListener('keydown', function(e) {
-                    if (e.code === 'Space') activateJetpack(e);
-                });
-                document.addEventListener('keyup', function(e) {
-                    if (e.code === 'Space') deactivateJetpack(e);
-                });
+                document.addEventListener('keydown', handleKeyDown);
+                document.addEventListener('keyup', handleKeyUp);
+            }
+            
+            function handleKeyDown(e) {
+                if (e.code === 'Space') activateJetpack(e);
+            }
+            
+            function handleKeyUp(e) {
+                if (e.code === 'Space') deactivateJetpack(e);
             }
             
             // Remove game control event listeners
@@ -1244,50 +1249,31 @@
                     gameContainer.removeEventListener('mouseup', deactivateJetpack);
                 }
                 
-                document.removeEventListener('keydown', function(e) {
-                    if (e.code === 'Space') activateJetpack(e);
-                });
-                document.removeEventListener('keyup', function(e) {
-                    if (e.code === 'Space') deactivateJetpack(e);
-                });
+                document.removeEventListener('keydown', handleKeyDown);
+                document.removeEventListener('keyup', handleKeyUp);
             }
             
             // Event handlers for buttons
             startGameBtn.addEventListener('click', function() {
                 selectLevel(0); // Start with level 1
             });
-            restartBtn.addEventListener('click', restartGame);
-            menuBtn.addEventListener('click', showMainMenu);
-            continueBtn.addEventListener('click', continueToNextLevel);
-            levelMenuBtn.addEventListener('click', showMainMenu);
-            
-            // Make sure all buttons are properly set up for mobile
-            function setupButtonListeners() {
-                const buttons = document.querySelectorAll('.btn');
-                buttons.forEach(button => {
-                    // Remove any existing event listeners
-                    const newButton = button.cloneNode(true);
-                    button.parentNode.replaceChild(newButton, button);
-                    
-                    // Add appropriate event listener
-                    if (newButton.id === 'continue-btn') {
-                        newButton.addEventListener('click', continueToNextLevel);
-                    } else if (newButton.id === 'level-menu-btn') {
-                        newButton.addEventListener('click', showMainMenu);
-                    } else if (newButton.id === 'restart-btn') {
-                        newButton.addEventListener('click', restartGame);
-                    } else if (newButton.id === 'menu-btn') {
-                        newButton.addEventListener('click', showMainMenu);
-                    } else if (newButton.id === 'start-game-btn') {
-                        newButton.addEventListener('click', function() {
-                            selectLevel(0);
-                        });
-                    }
-                });
-            }
-            
-            // Set up buttons initially
-            setupButtonListeners();
+
+            // Direct approach for button handlers
+            continueBtn.addEventListener('click', function() {
+                continueToNextLevel();
+            });
+
+            levelMenuBtn.addEventListener('click', function() {
+                showMainMenu();
+            });
+
+            restartBtn.addEventListener('click', function() {
+                restartGame();
+            });
+
+            menuBtn.addEventListener('click', function() {
+                showMainMenu();
+            });
             
             function startGame() {
                 titleScreen.style.display = 'none';
@@ -1326,7 +1312,6 @@
                 levelPaused = false;
                 resetGameState();
                 generateLevelButtons();
-                setupButtonListeners();
             }
             
             function continueToNextLevel() {
@@ -1389,10 +1374,10 @@
                 const tiltAngle = Math.max(-20, Math.min(20, playerVelocity * 2));
                 player.style.transform = `rotate(${tiltAngle}deg)`;
                 
-                // Update magnet effect position if active
+                // Update magnet radius position if active
                 if (hasCoinMagnet) {
-                    magnetEffect.style.left = `${playerStartX - 15 * vmin}px`;
-                    magnetEffect.style.bottom = `${playerY - 15 * vmin + playerHeight / 2}px`;
+                    magnetRadius.style.left = `${playerStartX - 100 + playerWidth/2}px`;
+                    magnetRadius.style.bottom = `${playerY - 100 + playerHeight/2}px`;
                 }
             }
             
@@ -1768,7 +1753,7 @@
                         // Apply magnet effect if within range
                         if (distance < 150) {
                             const angle = Math.atan2(dy, dx);
-                            const magnetForce = Math.max(1, 10 - distance / 20);
+                            const magnetForce = Math.max(1, 8 - distance / 25);
                             
                             coins[i].position += Math.cos(angle) * magnetForce;
                             coins[i].bottom += Math.sin(angle) * magnetForce;
@@ -1914,7 +1899,7 @@
                             // Activate coin magnet powerup
                             hasCoinMagnet = true;
                             coinMagnetTimeLeft = 10 * 60; // 10 seconds
-                            magnetEffect.style.display = 'block';
+                            magnetRadius.style.display = 'block';
                             createPowerupCollectEffect('magnet', coins[i].position, coins[i].bottom);
                         }
                         
@@ -1957,7 +1942,7 @@
                         } else if (type === 'magnet') {
                             hasCoinMagnet = true;
                             coinMagnetTimeLeft = 15 * 60; // 15 seconds
-                            magnetEffect.style.display = 'block';
+                            magnetRadius.style.display = 'block';
                         } else if (type === 'time-slow') {
                             hasTimeSlow = true;
                             timeSlowTimeLeft = 8 * 60; // 8 seconds
@@ -2120,7 +2105,7 @@
                     coinMagnetTimeLeft--;
                     if (coinMagnetTimeLeft === 0) {
                         hasCoinMagnet = false;
-                        magnetEffect.style.display = 'none';
+                        magnetRadius.style.display = 'none';
                     }
                 }
                 
@@ -2247,9 +2232,6 @@
                 
                 // Show level complete screen
                 levelCompleteMessage.style.display = 'block';
-                
-                // Re-setup button listeners to ensure they work properly
-                setupButtonListeners();
             }
             
             function endGame() {
@@ -2276,9 +2258,6 @@
                     cancelAnimationFrame(animationFrameId);
                     animationFrameId = null;
                 }
-                
-                // Re-setup button listeners to ensure they work properly
-                setupButtonListeners();
             }
             
             function resetGameState() {
@@ -2353,7 +2332,7 @@
                 
                 // Reset visual effects
                 player.style.boxShadow = 'none';
-                magnetEffect.style.display = 'none';
+                magnetRadius.style.display = 'none';
                 timeSlowOverlay.style.display = 'none';
                 multiplierDisplay.style.display = 'none';
                 
