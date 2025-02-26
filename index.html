@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jetpack Adventure</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             margin: 0;
             overflow: hidden;
@@ -14,7 +20,10 @@
             -ms-user-select: none; /* IE 10+ */
             user-select: none; /* Standard syntax */
             touch-action: manipulation;
+            height: 100vh;
+            width: 100vw;
         }
+        
         #game-container {
             position: relative;
             width: 100%;
@@ -22,80 +31,92 @@
             overflow: hidden;
             background-color: #87CEEB;
         }
+        
         #player {
             position: absolute;
-            width: 50px;
-            height: 70px;
-            left: 100px;
+            width: 5vmin;
+            height: 7vmin;
+            left: 10vw;
             transition: transform 0.1s;
             z-index: 50;
         }
+        
         .player-body {
             position: absolute;
-            width: 30px;
-            height: 40px;
+            width: 3vmin;
+            height: 4vmin;
             background-color: #FF5733;
             border-radius: 8px 8px 0 0;
             bottom: 0;
-            left: 10px;
+            left: 1vmin;
         }
+        
         .player-head {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 2vmin;
+            height: 2vmin;
             background-color: #FFC0CB;
             border-radius: 50%;
-            bottom: 40px;
-            left: 15px;
+            bottom: 4vmin;
+            left: 1.5vmin;
         }
+        
         .player-arm {
             position: absolute;
-            width: 8px;
-            height: 20px;
+            width: 0.8vmin;
+            height: 2vmin;
             background-color: #FFC0CB;
-            bottom: 20px;
+            bottom: 2vmin;
         }
+        
         .player-arm.left {
-            left: 2px;
+            left: 0.2vmin;
             transform-origin: bottom;
         }
+        
         .player-arm.right {
-            right: 2px;
+            right: 0.2vmin;
             transform-origin: bottom;
         }
+        
         .player-leg {
             position: absolute;
-            width: 10px;
-            height: 15px;
+            width: 1vmin;
+            height: 1.5vmin;
             background-color: #4169E1;
             bottom: 0;
         }
+        
         .player-leg.left {
-            left: 12px;
+            left: 1.2vmin;
         }
+        
         .player-leg.right {
-            right: 12px;
+            right: 1.2vmin;
         }
+        
         .jetpack {
             position: absolute;
-            width: 20px;
-            height: 30px;
+            width: 2vmin;
+            height: 3vmin;
             background-color: #555;
             border-radius: 5px;
-            left: -5px;
-            bottom: 15px;
+            left: -0.5vmin;
+            bottom: 1.5vmin;
         }
+        
         .jetpack-flame {
             position: absolute;
-            width: 15px;
-            height: 25px;
+            width: 1.5vmin;
+            height: 2.5vmin;
             background: linear-gradient(to bottom, #FFC300, #FF5733);
             border-radius: 0 0 50% 50%;
-            left: -2px;
-            bottom: -20px;
+            left: -0.2vmin;
+            bottom: -2vmin;
             opacity: 0;
             transition: opacity 0.1s;
         }
+        
         .obstacle {
             position: absolute;
             background-color: #FF005C;
@@ -103,71 +124,82 @@
             z-index: 60;
             box-shadow: 0 0 15px #FF005C;
         }
+        
         .vertical-laser {
-            width: 8px; 
-            border-radius: 4px;
+            width: 0.8vmin; 
+            border-radius: 0.4vmin;
         }
+        
         .horizontal-laser {
-            height: 8px;
-            border-radius: 4px;
+            height: 0.8vmin;
+            border-radius: 0.4vmin;
         }
+        
         .laser-emitter {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 2vmin;
+            height: 2vmin;
             background-color: #444;
             border-radius: 4px;
             z-index: 60;
         }
+        
         .coin {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 2vmin;
+            height: 2vmin;
             background-color: gold;
             border-radius: 50%;
             box-shadow: 0 0 5px gold;
             z-index: 45;
         }
+        
         .powerup {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 3vmin;
+            height: 3vmin;
             border-radius: 5px;
             box-shadow: 0 0 10px white;
             z-index: 45;
         }
+        
         .invincibility {
             background-color: #FF9500;
         }
+        
         .shield {
             background-color: #3498DB;
         }
+        
         .ground {
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 50px;
+            height: 5vh;
             background-color: #8B4513;
             background-image: linear-gradient(to bottom, #8B4513, #654321);
             z-index: 40;
         }
+        
         .ceiling {
             position: absolute;
             top: 0;
             width: 100%;
-            height: 20px;
+            height: 2vh;
             background-color: #696969;
             z-index: 40;
         }
+        
         #score-display {
             position: absolute;
-            top: 30px;
-            left: 20px;
+            top: 3vh;
+            left: 2vw;
             color: white;
-            font-size: 24px;
+            font-size: calc(16px + 0.8vmin);
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
+        
         #game-over {
             position: absolute;
             top: 50%;
@@ -181,7 +213,9 @@
             display: none;
             z-index: 200;
             min-width: 300px;
+            max-width: 90%;
         }
+        
         .btn {
             margin-top: 20px;
             padding: 10px 20px;
@@ -190,47 +224,55 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: calc(14px + 0.4vmin);
             transition: background-color 0.3s;
         }
+        
         .btn:hover {
             background-color: #FF7043;
         }
+        
         #powerup-indicator {
             position: absolute;
-            top: 70px;
-            left: 20px;
+            top: 7vh;
+            left: 2vw;
             color: white;
-            font-size: 18px;
+            font-size: calc(14px + 0.5vmin);
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
+        
         #level-indicator {
             position: absolute;
-            top: 110px;
-            left: 20px;
+            top: 11vh;
+            left: 2vw;
             color: white;
-            font-size: 18px;
+            font-size: calc(14px + 0.5vmin);
             z-index: 100;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
+        
         #level-progress {
             position: absolute;
-            top: 140px;
-            left: 20px;
-            width: 150px;
-            height: 10px;
+            top: 14vh;
+            left: 2vw;
+            width: 15vw;
+            max-width: 150px;
+            min-width: 100px;
+            height: 1vh;
             background-color: rgba(255, 255, 255, 0.3);
             border-radius: 5px;
             overflow: hidden;
             z-index: 100;
         }
+        
         #progress-bar {
             height: 100%;
             width: 0%;
             background-color: #FF5733;
             transition: width 0.3s;
         }
+        
         #level-complete {
             position: absolute;
             top: 40%;
@@ -244,7 +286,19 @@
             display: none;
             z-index: 190;
             min-width: 300px;
+            max-width: 90%;
         }
+        
+        #level-complete h2 {
+            margin-bottom: 10px;
+            font-size: calc(20px + 1vmin);
+        }
+        
+        #level-complete p {
+            margin-bottom: 20px;
+            font-size: calc(16px + 0.5vmin);
+        }
+        
         #title-screen {
             position: absolute;
             top: 0;
@@ -258,48 +312,60 @@
             align-items: center;
             z-index: 300;
         }
+        
         #title {
-            font-size: 48px;
+            font-size: calc(24px + 2vmin);
             color: white;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            margin-bottom: 30px;
+            margin-bottom: 3vh;
             text-align: center;
+            padding: 0 20px;
         }
+        
         #high-score {
-            font-size: 24px;
+            font-size: calc(16px + 0.8vmin);
             color: gold;
-            margin-bottom: 20px;
+            margin-bottom: 2vh;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
+        
         #customization {
             background-color: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 3vh;
             width: 80%;
             max-width: 400px;
         }
+        
         #customization h2 {
             color: white;
             text-align: center;
             margin-top: 0;
+            font-size: calc(16px + 0.5vmin);
+            margin-bottom: 15px;
         }
+        
         .color-option {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
+        
         .color-option label {
             color: white;
             flex: 1;
+            font-size: calc(14px + 0.2vmin);
         }
+        
         .color-option input {
             flex: 1;
         }
+        
         #start-game-btn {
             padding: 15px 30px;
-            font-size: 20px;
+            font-size: calc(16px + 0.5vmin);
             background-color: #FF5733;
             color: white;
             border: none;
@@ -307,23 +373,29 @@
             cursor: pointer;
             transition: transform 0.2s, background-color 0.3s;
         }
+        
         #start-game-btn:hover {
             transform: scale(1.05);
             background-color: #FF7043;
         }
+        
         #level-selection {
             background-color: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 3vh;
             width: 80%;
             max-width: 400px;
             color: white;
             text-align: center;
         }
+        
         #level-selection h2 {
             margin-top: 0;
+            font-size: calc(16px + 0.5vmin);
+            margin-bottom: 15px;
         }
+        
         .level-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -331,46 +403,80 @@
             gap: 10px;
             margin-top: 15px;
         }
+        
         .level-btn {
-            width: 50px;
-            height: 50px;
+            width: calc(30px + 2vmin);
+            height: calc(30px + 2vmin);
             border-radius: 50%;
             background-color: #3498DB;
             color: white;
             border: none;
-            font-size: 18px;
+            font-size: calc(14px + 0.4vmin);
             cursor: pointer;
             transition: transform 0.2s;
         }
+        
         .level-btn:hover {
             transform: scale(1.1);
         }
+        
         .level-btn.locked {
             background-color: #7f8c8d;
             cursor: not-allowed;
         }
+        
         .level-btn.completed {
             background-color: #2ecc71;
         }
+        
         .background-element {
             position: absolute;
             z-index: 10;
         }
+        
         .cloud {
             background-color: white;
             border-radius: 50px;
             opacity: 0.8;
         }
+        
         .mountain {
             background: linear-gradient(to bottom, #8B4513, #654321);
             clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
         }
+        
+        .effect {
+            position: absolute;
+            z-index: 150;
+            pointer-events: none;
+        }
+        
         @media (max-width: 768px) {
             #title {
-                font-size: 36px;
+                font-size: calc(24px + 1.5vmin);
             }
+            
             #customization, #level-selection {
                 width: 90%;
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            #level-progress {
+                top: 16vh;
+            }
+            
+            #level-indicator {
+                top: 12vh;
+            }
+            
+            #powerup-indicator {
+                top: 8vh;
             }
         }
     </style>
@@ -470,6 +576,46 @@
             const startGameBtn = document.getElementById('start-game-btn');
             const levelButtonsContainer = document.getElementById('level-buttons-container');
             
+            // Game dimensions
+            let groundHeight, ceilingHeight, playerHeight, playerWidth, playerStartX;
+            
+            // Function to update responsive dimensions
+            function updateDimensions() {
+                // Get dimensions in pixels based on viewport units
+                const vh = window.innerHeight / 100;
+                const vw = window.innerWidth / 100;
+                const vmin = Math.min(vh, vw);
+                
+                groundHeight = 5 * vh;
+                ceilingHeight = 2 * vh;
+                playerHeight = 7 * vmin;
+                playerWidth = 5 * vmin;
+                playerStartX = 10 * vw;
+                
+                // Update player position
+                if (player) {
+                    player.style.left = `${playerStartX}px`;
+                }
+            }
+            
+            // Initial dimension setup
+            updateDimensions();
+            
+            // Update dimensions on resize
+            window.addEventListener('resize', function() {
+                updateDimensions();
+                
+                // If game is active, adjust player position
+                if (gameActive && !gameOver && !levelPaused) {
+                    const groundOffset = groundHeight + 10;
+                    const maxY = gameContainer.clientHeight - playerHeight - groundHeight;
+                    
+                    // Ensure player stays within bounds
+                    playerY = Math.min(maxY, Math.max(ceilingHeight, playerY));
+                    player.style.bottom = `${playerY}px`;
+                }
+            });
+            
             // Character customization elements
             const bodyColorInput = document.getElementById('body-color');
             const skinColorInput = document.getElementById('skin-color');
@@ -565,11 +711,8 @@
             let invincibilityTimeLeft = 0;
             let invincibilityGracePeriod = 0;
             
-            // Game dimensions
-            const playerHeight = 70;
-            const playerWidth = 50;
-            const groundHeight = 50;
-            const ceilingHeight = 20;
+            // Initialize player position
+            player.style.bottom = `${groundHeight + 10}px`;
             
             // Generate level selection buttons
             function generateLevelButtons() {
@@ -651,8 +794,11 @@
                 let width, height, bottom, left;
                 
                 if (type === 'cloud') {
-                    width = Math.floor(Math.random() * 200) + 100;
-                    height = Math.floor(Math.random() * 40) + 30;
+                    const vw = window.innerWidth / 100;
+                    const vh = window.innerHeight / 100;
+                    
+                    width = Math.floor(Math.random() * 20 * vw) + 10 * vw;
+                    height = Math.floor(Math.random() * 4 * vh) + 3 * vh;
                     bottom = Math.floor(Math.random() * (gameContainer.clientHeight - 200)) + 150;
                     left = Math.floor(Math.random() * gameContainer.clientWidth);
                     
@@ -671,8 +817,11 @@
                         speed: speed
                     });
                 } else if (type === 'mountain') {
-                    width = Math.floor(Math.random() * 300) + 200;
-                    height = Math.floor(Math.random() * 150) + 100;
+                    const vw = window.innerWidth / 100;
+                    const vh = window.innerHeight / 100;
+                    
+                    width = Math.floor(Math.random() * 30 * vw) + 20 * vw;
+                    height = Math.floor(Math.random() * 15 * vh) + 10 * vh;
                     bottom = groundHeight;
                     left = Math.floor(Math.random() * gameContainer.clientWidth);
                     
@@ -695,9 +844,6 @@
                 
                 gameContainer.appendChild(element);
             }
-            
-            // Initialize player position
-            player.style.bottom = `${groundHeight + 10}px`;
             
             // Event listeners for game controls
             function activateJetpack(e) {
@@ -760,6 +906,11 @@
                 levelIndicator.textContent = `Level: ${currentLevel}`;
                 distanceTraveled = 0;
                 updateProgress();
+                
+                // Make sure player is at a valid starting position
+                playerY = gameContainer.clientHeight / 2;
+                player.style.bottom = `${playerY}px`;
+                
                 addGameControls();
                 gameLoop();
             }
@@ -799,9 +950,7 @@
                 updateProgress();
                 
                 // Resume game loop
-                if (!animationFrameId) {
-                    gameLoop();
-                }
+                gameLoop();
             }
             
             function updatePlayerPosition() {
@@ -838,13 +987,16 @@
                     // Determine laser type and position
                     let laserType, height, width, bottom, laserClass;
                     const containerHeight = gameContainer.clientHeight;
+                    const vw = window.innerWidth / 100;
+                    const vh = window.innerHeight / 100;
+                    const vmin = Math.min(vh, vw);
                     
                     // Random laser type (vertical or horizontal)
                     if (Math.random() < 0.5) {
                         // Vertical laser
                         laserType = 'vertical';
                         laserClass = 'vertical-laser';
-                        width = 8;
+                        width = 0.8 * vmin;
                         
                         // Determine height and position based on level
                         if (currentLevel <= 3) {
@@ -892,12 +1044,12 @@
                         // Horizontal laser
                         laserType = 'horizontal';
                         laserClass = 'horizontal-laser';
-                        height = 8;
-                        width = Math.random() < 0.3 ? 50 : 100; // Sometimes shorter, sometimes longer
+                        height = 0.8 * vmin;
+                        width = Math.random() < 0.3 ? 5 * vw : 10 * vw; // Sometimes shorter, sometimes longer
                         
                         // Position horizontal lasers throughout the screen height
-                        const minBottom = groundHeight + 50;
-                        const maxBottom = containerHeight - ceilingHeight - 100;
+                        const minBottom = groundHeight + 5 * vh;
+                        const maxBottom = containerHeight - ceilingHeight - 10 * vh;
                         bottom = Math.floor(Math.random() * (maxBottom - minBottom)) + minBottom;
                     }
                     
@@ -963,22 +1115,26 @@
                     const coin = document.createElement('div');
                     coin.className = 'coin';
                     
+                    const coinSize = 2 * Math.min(window.innerWidth, window.innerHeight) / 100;
+                    coin.style.width = `${coinSize}px`;
+                    coin.style.height = `${coinSize}px`;
+                    
                     let bottom;
                     
                     // Create coin patterns based on level
                     if (currentLevel <= 3) {
                         // Simple coin placement
-                        bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                        bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - coinSize)) + groundHeight;
                     } else {
                         // Create coin patterns in higher levels
                         const pattern = Math.random();
                         
                         if (pattern < 0.3) {
                             // Single coins
-                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - coinSize)) + groundHeight;
                         } else if (pattern < 0.6) {
                             // Create a horizontal row of coins
-                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 20)) + groundHeight;
+                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - coinSize)) + groundHeight;
                             
                             // Add additional coins in a row
                             const count = Math.floor(Math.random() * 3) + 2;
@@ -987,13 +1143,16 @@
                                     if (gameActive && !gameOver && !levelPaused) {
                                         const extraCoin = document.createElement('div');
                                         extraCoin.className = 'coin';
+                                        extraCoin.style.width = `${coinSize}px`;
+                                        extraCoin.style.height = `${coinSize}px`;
                                         extraCoin.style.bottom = `${bottom}px`;
                                         extraCoin.style.left = `${gameContainer.clientWidth}px`;
                                         gameContainer.appendChild(extraCoin);
                                         coins.push({
                                             element: extraCoin,
                                             position: gameContainer.clientWidth,
-                                            bottom: bottom
+                                            bottom: bottom,
+                                            size: coinSize
                                         });
                                     }
                                 }, i * 200);
@@ -1010,13 +1169,16 @@
                                     if (gameActive && !gameOver && !levelPaused) {
                                         const extraCoin = document.createElement('div');
                                         extraCoin.className = 'coin';
-                                        extraCoin.style.bottom = `${baseBottom + (i * 40)}px`;
+                                        extraCoin.style.width = `${coinSize}px`;
+                                        extraCoin.style.height = `${coinSize}px`;
+                                        extraCoin.style.bottom = `${baseBottom + (i * coinSize * 2)}px`;
                                         extraCoin.style.left = `${gameContainer.clientWidth}px`;
                                         gameContainer.appendChild(extraCoin);
                                         coins.push({
                                             element: extraCoin,
                                             position: gameContainer.clientWidth,
-                                            bottom: baseBottom + (i * 40)
+                                            bottom: baseBottom + (i * coinSize * 2),
+                                            size: coinSize
                                         });
                                     }
                                 }, i * 200);
@@ -1034,7 +1196,8 @@
                     coins.push({
                         element: coin,
                         position: gameContainer.clientWidth,
-                        bottom: bottom
+                        bottom: bottom,
+                        size: coinSize
                     });
                 }
             }
@@ -1047,12 +1210,16 @@
                     const powerup = document.createElement('div');
                     powerup.className = 'powerup';
                     
+                    const powerupSize = 3 * Math.min(window.innerWidth, window.innerHeight) / 100;
+                    powerup.style.width = `${powerupSize}px`;
+                    powerup.style.height = `${powerupSize}px`;
+                    
                     // In higher levels, shields become rarer
                     const typeChance = Math.max(0.3, 0.6 - (currentLevel * 0.03));
                     const type = Math.random() < typeChance ? 'shield' : 'invincibility';
                     powerup.classList.add(type);
                     
-                    const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 30)) + groundHeight;
+                    const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - powerupSize)) + groundHeight;
                     
                     powerup.style.bottom = `${bottom}px`;
                     powerup.style.left = `${gameContainer.clientWidth}px`;
@@ -1065,7 +1232,8 @@
                         element: powerup,
                         position: gameContainer.clientWidth,
                         bottom: bottom,
-                        type: type
+                        type: type,
+                        size: powerupSize
                     });
                 }
             }
@@ -1117,7 +1285,9 @@
                         // Remove emitters
                         if (obstacles[i].emitters) {
                             for (const emitter of obstacles[i].emitters) {
-                                gameContainer.removeChild(emitter);
+                                if (emitter.parentNode === gameContainer) {
+                                    gameContainer.removeChild(emitter);
+                                }
                             }
                         }
                         
@@ -1134,7 +1304,9 @@
                     
                     // Remove coins that have gone off-screen
                     if (coins[i].position < 0) {
-                        gameContainer.removeChild(coins[i].element);
+                        if (coins[i].element.parentNode === gameContainer) {
+                            gameContainer.removeChild(coins[i].element);
+                        }
                         coins.splice(i, 1);
                         i--;
                     }
@@ -1148,7 +1320,9 @@
                     
                     // Remove powerups that have gone off-screen
                     if (powerups[i].position < 0) {
-                        gameContainer.removeChild(powerups[i].element);
+                        if (powerups[i].element.parentNode === gameContainer) {
+                            gameContainer.removeChild(powerups[i].element);
+                        }
                         powerups.splice(i, 1);
                         i--;
                     }
@@ -1156,7 +1330,7 @@
             }
             
             function checkCollisions() {
-                const playerLeft = 100;
+                const playerLeft = playerStartX;
                 const playerRight = playerLeft + playerWidth;
                 const playerTop = gameContainer.clientHeight - playerY - playerHeight;
                 const playerBottom = gameContainer.clientHeight - playerY;
@@ -1176,16 +1350,21 @@
                             createInvincibilityEffect(obsLeft, obstacles[i].bottom + obstacles[i].height / 2);
                             
                             // Remove the obstacle
-                            gameContainer.removeChild(obstacles[i].element);
+                            if (obstacles[i].element.parentNode === gameContainer) {
+                                gameContainer.removeChild(obstacles[i].element);
+                            }
                             
                             // Remove emitters
                             if (obstacles[i].emitters) {
                                 for (const emitter of obstacles[i].emitters) {
-                                    gameContainer.removeChild(emitter);
+                                    if (emitter.parentNode === gameContainer) {
+                                        gameContainer.removeChild(emitter);
+                                    }
                                 }
                             }
                             
                             obstacles.splice(i, 1);
+                            i--;
                         } else if (hasShield) {
                             // Shield protects from one collision
                             hasShield = false;
@@ -1196,43 +1375,54 @@
                             createShieldBreakEffect();
                             
                             // Remove the obstacle
-                            gameContainer.removeChild(obstacles[i].element);
+                            if (obstacles[i].element.parentNode === gameContainer) {
+                                gameContainer.removeChild(obstacles[i].element);
+                            }
                             
                             // Remove emitters
                             if (obstacles[i].emitters) {
                                 for (const emitter of obstacles[i].emitters) {
-                                    gameContainer.removeChild(emitter);
+                                    if (emitter.parentNode === gameContainer) {
+                                        gameContainer.removeChild(emitter);
+                                    }
                                 }
                             }
                             
                             obstacles.splice(i, 1);
+                            i--;
                         } else if (invincibilityGracePeriod > 0) {
                             // Grace period after invincibility also prevents death
                             createInvincibilityEffect(obsLeft, obstacles[i].bottom + obstacles[i].height / 2);
                             
                             // Remove the obstacle
-                            gameContainer.removeChild(obstacles[i].element);
+                            if (obstacles[i].element.parentNode === gameContainer) {
+                                gameContainer.removeChild(obstacles[i].element);
+                            }
                             
                             // Remove emitters
                             if (obstacles[i].emitters) {
                                 for (const emitter of obstacles[i].emitters) {
-                                    gameContainer.removeChild(emitter);
+                                    if (emitter.parentNode === gameContainer) {
+                                        gameContainer.removeChild(emitter);
+                                    }
                                 }
                             }
                             
                             obstacles.splice(i, 1);
+                            i--;
                         } else {
                             endGame();
+                            return;
                         }
-                        break;
                     }
                 }
                 
                 // Check coin collisions
                 for (let i = 0; i < coins.length; i++) {
                     const coinLeft = coins[i].position;
-                    const coinRight = coinLeft + 20;
-                    const coinTop = gameContainer.clientHeight - coins[i].bottom - 20;
+                    const coinSize = coins[i].size || 20;
+                    const coinRight = coinLeft + coinSize;
+                    const coinTop = gameContainer.clientHeight - coins[i].bottom - coinSize;
                     const coinBottom = gameContainer.clientHeight - coins[i].bottom;
                     
                     if (playerRight > coinLeft && playerLeft < coinRight &&
@@ -1241,7 +1431,9 @@
                         // Collect coin with effect
                         createCoinCollectEffect(coins[i].position, coins[i].bottom);
                         
-                        gameContainer.removeChild(coins[i].element);
+                        if (coins[i].element.parentNode === gameContainer) {
+                            gameContainer.removeChild(coins[i].element);
+                        }
                         coins.splice(i, 1);
                         score += 10;
                         scoreDisplay.textContent = `Score: ${score}`;
@@ -1252,8 +1444,9 @@
                 // Check powerup collisions
                 for (let i = 0; i < powerups.length; i++) {
                     const powerupLeft = powerups[i].position;
-                    const powerupRight = powerupLeft + 30;
-                    const powerupTop = gameContainer.clientHeight - powerups[i].bottom - 30;
+                    const powerupSize = powerups[i].size || 30;
+                    const powerupRight = powerupLeft + powerupSize;
+                    const powerupTop = gameContainer.clientHeight - powerups[i].bottom - powerupSize;
                     const powerupBottom = gameContainer.clientHeight - powerups[i].bottom;
                     
                     if (playerRight > powerupLeft && playerLeft < powerupRight &&
@@ -1271,7 +1464,9 @@
                             shieldTimeLeft = 10 * 60; // 10 seconds at 60fps
                         }
                         
-                        gameContainer.removeChild(powerups[i].element);
+                        if (powerups[i].element.parentNode === gameContainer) {
+                            gameContainer.removeChild(powerups[i].element);
+                        }
                         powerups.splice(i, 1);
                         updatePowerupIndicator();
                         i--;
@@ -1281,16 +1476,17 @@
             
             function createCoinCollectEffect(x, y) {
                 const effect = document.createElement('div');
+                effect.className = 'effect';
                 effect.textContent = '+10';
                 effect.style.position = 'absolute';
                 effect.style.left = `${x}px`;
                 effect.style.bottom = `${y}px`;
                 effect.style.color = 'gold';
-                effect.style.fontSize = '18px';
+                effect.style.fontSize = 'calc(14px + 0.4vmin)';
                 effect.style.fontWeight = 'bold';
-                effect.style.zIndex = '150';
                 effect.style.textShadow = '0 0 5px black';
                 effect.style.animation = 'float-up 1s forwards';
+                effect.style.pointerEvents = 'none';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1303,16 +1499,17 @@
             
             function createPowerupCollectEffect(type, x, y) {
                 const effect = document.createElement('div');
+                effect.className = 'effect';
                 effect.textContent = type === 'invincibility' ? 'Invincibility!' : 'Shield!';
                 effect.style.position = 'absolute';
                 effect.style.left = `${x}px`;
                 effect.style.bottom = `${y}px`;
                 effect.style.color = type === 'invincibility' ? '#FF9500' : '#3498DB';
-                effect.style.fontSize = '18px';
+                effect.style.fontSize = 'calc(14px + 0.4vmin)';
                 effect.style.fontWeight = 'bold';
-                effect.style.zIndex = '150';
                 effect.style.textShadow = '0 0 5px black';
                 effect.style.animation = 'float-up 1s forwards';
+                effect.style.pointerEvents = 'none';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1326,15 +1523,16 @@
             function createShieldBreakEffect() {
                 // Add shield break animation around player
                 const effect = document.createElement('div');
+                effect.className = 'effect';
                 effect.style.position = 'absolute';
-                effect.style.width = '80px';
-                effect.style.height = '80px';
-                effect.style.left = '85px';
-                effect.style.bottom = `${playerY - 5}px`;
+                effect.style.width = '8vmin';
+                effect.style.height = '8vmin';
+                effect.style.left = `${playerStartX - 1.5 * vmin}px`;
+                effect.style.bottom = `${playerY - 0.5 * vmin}px`;
                 effect.style.borderRadius = '50%';
                 effect.style.border = '3px solid #3498DB';
-                effect.style.zIndex = '150';
                 effect.style.animation = 'shield-break 0.5s forwards';
+                effect.style.pointerEvents = 'none';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1348,15 +1546,16 @@
             function createInvincibilityEffect(x, y) {
                 // Add explosion effect when invincible player hits obstacle
                 const effect = document.createElement('div');
+                effect.className = 'effect';
                 effect.style.position = 'absolute';
-                effect.style.width = '60px';
-                effect.style.height = '60px';
-                effect.style.left = `${x - 30}px`;
-                effect.style.bottom = `${y - 30}px`;
+                effect.style.width = '6vmin';
+                effect.style.height = '6vmin';
+                effect.style.left = `${x - 3 * vmin}px`;
+                effect.style.bottom = `${y - 3 * vmin}px`;
                 effect.style.borderRadius = '50%';
                 effect.style.background = 'radial-gradient(circle, #FF9500, #FF5733)';
-                effect.style.zIndex = '150';
                 effect.style.animation = 'explosion 0.5s forwards';
+                effect.style.pointerEvents = 'none';
                 
                 gameContainer.appendChild(effect);
                 
@@ -1449,6 +1648,7 @@
                 
                 // Update level complete message
                 completedLevelSpan.textContent = currentLevel;
+                nextLevelSpan.textContent = currentLevel + 1;
                 
                 // Show "all levels complete" message if it's the last level
                 if (currentLevel === levels.length) {
@@ -1458,6 +1658,7 @@
                 } else {
                     // Reset normal level complete message
                     levelCompleteMessage.querySelector('h2').textContent = "Level Complete!";
+                    levelCompleteMessage.querySelector('p').textContent = `You completed Level ${currentLevel}!`;
                     nextLevelSpan.textContent = currentLevel + 1;
                     continueBtn.style.display = 'inline-block';
                 }
@@ -1486,19 +1687,25 @@
                 // Clean up event listeners
                 removeGameControls();
                 
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
             }
             
             function resetGameState() {
                 // Clear all elements
                 while (obstacles.length > 0) {
-                    gameContainer.removeChild(obstacles[0].element);
+                    if (obstacles[0].element.parentNode === gameContainer) {
+                        gameContainer.removeChild(obstacles[0].element);
+                    }
                     
                     // Remove emitters
                     if (obstacles[0].emitters) {
                         for (const emitter of obstacles[0].emitters) {
-                            gameContainer.removeChild(emitter);
+                            if (emitter.parentNode === gameContainer) {
+                                gameContainer.removeChild(emitter);
+                            }
                         }
                     }
                     
@@ -1506,18 +1713,32 @@
                 }
                 
                 while (coins.length > 0) {
-                    gameContainer.removeChild(coins[0].element);
+                    if (coins[0].element.parentNode === gameContainer) {
+                        gameContainer.removeChild(coins[0].element);
+                    }
                     coins.shift();
                 }
                 
                 while (powerups.length > 0) {
-                    gameContainer.removeChild(powerups[0].element);
+                    if (powerups[0].element.parentNode === gameContainer) {
+                        gameContainer.removeChild(powerups[0].element);
+                    }
                     powerups.shift();
                 }
                 
                 while (backgroundElements.length > 0) {
-                    gameContainer.removeChild(backgroundElements[0].element);
+                    if (backgroundElements[0].element.parentNode === gameContainer) {
+                        gameContainer.removeChild(backgroundElements[0].element);
+                    }
                     backgroundElements.shift();
+                }
+                
+                // Remove any lingering effects
+                const effects = document.querySelectorAll('.effect');
+                for (const effect of effects) {
+                    if (effect.parentNode === gameContainer) {
+                        gameContainer.removeChild(effect);
+                    }
                 }
                 
                 // Reset game state
@@ -1529,7 +1750,7 @@
                 score = 0;
                 distanceTraveled = 0;
                 hasShield = false;
-                shieldTimeLeft = a = 0;
+                shieldTimeLeft = 0;
                 isInvincible = false;
                 invincibilityTimeLeft = 0;
                 invincibilityGracePeriod = 0;
@@ -1591,10 +1812,6 @@
                     updateScore();
                     
                     animationFrameId = requestAnimationFrame(gameLoop);
-                } else if (levelPaused || gameOver) {
-                    // Stop the animation loop while level is paused or game is over
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
                 }
             }
             
@@ -1634,6 +1851,11 @@
                 }
             `;
             document.head.appendChild(style);
+            
+            // Get viewport unit equivalents for calculations
+            const vh = window.innerHeight / 100;
+            const vw = window.innerWidth / 100;
+            const vmin = Math.min(vh, vw);
             
             // Generate initial level buttons
             generateLevelButtons();
