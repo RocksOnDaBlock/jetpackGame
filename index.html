@@ -621,6 +621,8 @@
                 padding: 1.5vh 3vw;
                 margin: 1vh 1vw;
                 min-width: 40%;
+                min-height: 44px;
+                touch-action: manipulation;
             }
             
             #level-indicator {
@@ -662,6 +664,7 @@
             #start-game-btn {
                 margin: 2vh 0;
                 padding: 1.5vh 5vw;
+                min-height: 44px;
             }
         }
         
@@ -1050,6 +1053,75 @@
                 }
             }
             
+            // Event listeners for game controls
+            function activateJetpack(e) {
+                e.preventDefault();
+                if (gameActive && !gameOver && !levelPaused) {
+                    isJetpackActive = true;
+                    jetpackFlame.style.opacity = '1';
+                    
+                    // Animate arms when jetpack is active
+                    document.querySelector('.player-arm.left').style.transform = 'rotate(-30deg)';
+                    document.querySelector('.player-arm.right').style.transform = 'rotate(30deg)';
+                }
+            }
+            
+            function deactivateJetpack(e) {
+                e.preventDefault();
+                if (gameActive && !gameOver && !levelPaused) {
+                    isJetpackActive = false;
+                    jetpackFlame.style.opacity = '0';
+                    
+                    // Reset arm position
+                    document.querySelector('.player-arm.left').style.transform = 'rotate(0deg)';
+                    document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
+                }
+            }
+            
+            // Add game control event listeners for whole screen
+            function addGameControls() {
+                if (isMobile) {
+                    // Mobile touch controls - entire screen
+                    gameContainer.addEventListener('touchstart', activateJetpack, {passive: false});
+                    gameContainer.addEventListener('touchend', deactivateJetpack, {passive: false});
+                    
+                    // Prevent default behavior for touch events on the game container
+                    gameContainer.addEventListener('touchmove', function(e) {
+                        e.preventDefault();
+                    }, { passive: false });
+                } else {
+                    // Desktop controls
+                    gameContainer.addEventListener('mousedown', activateJetpack);
+                    gameContainer.addEventListener('mouseup', deactivateJetpack);
+                }
+                
+                // Keyboard controls work on both
+                document.addEventListener('keydown', handleKeyDown);
+                document.addEventListener('keyup', handleKeyUp);
+            }
+            
+            function handleKeyDown(e) {
+                if (e.code === 'Space') activateJetpack(e);
+            }
+            
+            function handleKeyUp(e) {
+                if (e.code === 'Space') deactivateJetpack(e);
+            }
+            
+            // Remove game control event listeners
+            function removeGameControls() {
+                if (isMobile) {
+                    gameContainer.removeEventListener('touchstart', activateJetpack);
+                    gameContainer.removeEventListener('touchend', deactivateJetpack);
+                } else {
+                    gameContainer.removeEventListener('mousedown', activateJetpack);
+                    gameContainer.removeEventListener('mouseup', deactivateJetpack);
+                }
+                
+                document.removeEventListener('keydown', handleKeyDown);
+                document.removeEventListener('keyup', handleKeyUp);
+            }
+            
             // Continue playing saved game
             continuePlayingBtn.addEventListener('click', function() {
                 const savedLevel = parseInt(localStorage.getItem('currentLevel')) || 1;
@@ -1084,6 +1156,55 @@
                 
                 startGame();
             }
+            
+            // Event handlers for buttons
+            startGameBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (e.type === 'click' || e.type === 'touchend') {
+                    selectLevel(0); // Start with level 1
+                }
+            });
+            
+            // Add mobile optimized touch events for popup buttons
+            continueBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                continueToNextLevel();
+            });
+            
+            continueBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                continueToNextLevel();
+            });
+            
+            levelMenuBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                showMainMenu();
+            });
+            
+            levelMenuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                showMainMenu();
+            });
+            
+            restartBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                restartGame();
+            });
+            
+            restartBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                restartGame();
+            });
+            
+            menuBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                showMainMenu();
+            });
+            
+            menuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                showMainMenu();
+            });
             
             // Save game state
             function saveGameState() {
@@ -1178,95 +1299,6 @@
                 gameContainer.appendChild(element);
             }
             
-            // Event listeners for game controls
-            function activateJetpack(e) {
-                e.preventDefault();
-                if (gameActive && !gameOver && !levelPaused) {
-                    isJetpackActive = true;
-                    jetpackFlame.style.opacity = '1';
-                    
-                    // Animate arms when jetpack is active
-                    document.querySelector('.player-arm.left').style.transform = 'rotate(-30deg)';
-                    document.querySelector('.player-arm.right').style.transform = 'rotate(30deg)';
-                }
-            }
-            
-            function deactivateJetpack(e) {
-                e.preventDefault();
-                isJetpackActive = false;
-                jetpackFlame.style.opacity = '0';
-                
-                // Reset arm position
-                document.querySelector('.player-arm.left').style.transform = 'rotate(0deg)';
-                document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
-            }
-            
-            // Add game control event listeners for whole screen
-            function addGameControls() {
-                if (isMobile) {
-                    // Mobile touch controls - entire screen
-                    gameContainer.addEventListener('touchstart', activateJetpack, {passive: false});
-                    gameContainer.addEventListener('touchend', deactivateJetpack, {passive: false});
-                    
-                    // Prevent default behavior for touch events on the game container
-                    gameContainer.addEventListener('touchmove', function(e) {
-                        e.preventDefault();
-                    }, { passive: false });
-                } else {
-                    // Desktop controls
-                    gameContainer.addEventListener('mousedown', activateJetpack);
-                    gameContainer.addEventListener('mouseup', deactivateJetpack);
-                }
-                
-                // Keyboard controls work on both
-                document.addEventListener('keydown', handleKeyDown);
-                document.addEventListener('keyup', handleKeyUp);
-            }
-            
-            function handleKeyDown(e) {
-                if (e.code === 'Space') activateJetpack(e);
-            }
-            
-            function handleKeyUp(e) {
-                if (e.code === 'Space') deactivateJetpack(e);
-            }
-            
-            // Remove game control event listeners
-            function removeGameControls() {
-                if (isMobile) {
-                    gameContainer.removeEventListener('touchstart', activateJetpack);
-                    gameContainer.removeEventListener('touchend', deactivateJetpack);
-                } else {
-                    gameContainer.removeEventListener('mousedown', activateJetpack);
-                    gameContainer.removeEventListener('mouseup', deactivateJetpack);
-                }
-                
-                document.removeEventListener('keydown', handleKeyDown);
-                document.removeEventListener('keyup', handleKeyUp);
-            }
-            
-            // Event handlers for buttons
-            startGameBtn.addEventListener('click', function() {
-                selectLevel(0); // Start with level 1
-            });
-
-            // Direct approach for button handlers
-            continueBtn.addEventListener('click', function() {
-                continueToNextLevel();
-            });
-
-            levelMenuBtn.addEventListener('click', function() {
-                showMainMenu();
-            });
-
-            restartBtn.addEventListener('click', function() {
-                restartGame();
-            });
-
-            menuBtn.addEventListener('click', function() {
-                showMainMenu();
-            });
-            
             function startGame() {
                 titleScreen.style.display = 'none';
                 continuePlayingBtn.style.display = 'none';
@@ -1307,6 +1339,7 @@
             }
             
             function continueToNextLevel() {
+                console.log("Continue to next level clicked!");
                 levelCompleteMessage.style.display = 'none';
                 levelPaused = false;
                 
@@ -2418,6 +2451,22 @@
             if (isMobile) {
                 document.body.style.position = 'fixed';
                 document.body.style.overflow = 'hidden';
+                
+                // Add debug logging for level complete popup
+                continueBtn.addEventListener('touchstart', function(e) {
+                    console.log("Continue button touchstart");
+                });
+                
+                // Force mobile button heights to be large enough for tapping
+                const buttons = document.querySelectorAll('.btn');
+                buttons.forEach(btn => {
+                    btn.style.minHeight = '44px';
+                });
+                
+                // Prevent double-tap zoom
+                document.addEventListener('dblclick', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
             }
             
             // Handle mobile-specific touch events
