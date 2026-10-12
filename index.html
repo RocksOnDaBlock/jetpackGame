@@ -1,2489 +1,980 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jetpack Adventure</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Arial', sans-serif;
-            background-color: #222;
-            -webkit-user-select: none; /* Safari */
-            -ms-user-select: none; /* IE 10+ */
-            user-select: none; /* Standard syntax */
-            touch-action: manipulation;
-            height: 100vh;
-            width: 100vw;
-            position: fixed;
-        }
-        
-        #game-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #87CEEB;
-        }
-        
-        #player {
-            position: absolute;
-            width: 7vmin;
-            height: 10vmin;
-            left: 15vw;
-            transition: transform 0.1s;
-            z-index: 50;
-        }
-        
-        .player-body {
-            position: absolute;
-            width: 4vmin;
-            height: 6vmin;
-            background-color: #FF5733;
-            border-radius: 8px 8px 0 0;
-            bottom: 0;
-            left: 1.5vmin;
-        }
-        
-        .player-head {
-            position: absolute;
-            width: 3vmin;
-            height: 3vmin;
-            background-color: #FFC0CB;
-            border-radius: 50%;
-            bottom: 6vmin;
-            left: 2vmin;
-        }
-        
-        .player-arm {
-            position: absolute;
-            width: 1.2vmin;
-            height: 3vmin;
-            background-color: #FFC0CB;
-            bottom: 3vmin;
-        }
-        
-        .player-arm.left {
-            left: 0.3vmin;
-            transform-origin: bottom;
-        }
-        
-        .player-arm.right {
-            right: 0.3vmin;
-            transform-origin: bottom;
-        }
-        
-        .player-leg {
-            position: absolute;
-            width: 1.5vmin;
-            height: 2vmin;
-            background-color: #4169E1;
-            bottom: 0;
-        }
-        
-        .player-leg.left {
-            left: 1.5vmin;
-        }
-        
-        .player-leg.right {
-            right: 1.5vmin;
-        }
-        
-        .jetpack {
-            position: absolute;
-            width: 3vmin;
-            height: 4vmin;
-            background-color: #555;
-            border-radius: 5px;
-            left: -0.8vmin;
-            bottom: 2vmin;
-        }
-        
-        .jetpack-flame {
-            position: absolute;
-            width: 2vmin;
-            height: 3.5vmin;
-            background: linear-gradient(to bottom, #FFC300, #FF5733);
-            border-radius: 0 0 50% 50%;
-            left: -0.3vmin;
-            bottom: -3vmin;
-            opacity: 0;
-            transition: opacity 0.1s;
-        }
-        
-        .obstacle {
-            position: absolute;
-            background-color: #FF005C;
-            border-radius: 0;
-            z-index: 60;
-            box-shadow: 0 0 15px #FF005C;
-        }
-        
-        .vertical-laser {
-            width: 1.2vmin; 
-            border-radius: 0.6vmin;
-        }
-        
-        .horizontal-laser {
-            height: 1.2vmin;
-            border-radius: 0.6vmin;
-        }
-        
-        .laser-emitter {
-            position: absolute;
-            width: 3vmin;
-            height: 3vmin;
-            background-color: #444;
-            border-radius: 4px;
-            z-index: 60;
-        }
-        
-        .coin {
-            position: absolute;
-            width: 4vmin;
-            height: 4vmin;
-            background-color: gold;
-            border-radius: 50%;
-            box-shadow: 0 0 5px gold;
-            z-index: 45;
-        }
-        
-        .magnet-coin {
-            background-color: #FFD700;
-            box-shadow: 0 0 10px #FFD700;
-            animation: pulse-gold 1.5s infinite alternate;
-        }
-        
-        .powerup {
-            position: absolute;
-            width: 6vmin;
-            height: 6vmin;
-            border-radius: 10%;
-            box-shadow: 0 0 10px white;
-            z-index: 45;
-        }
-        
-        .invincibility {
-            background-color: #FF9500;
-        }
-        
-        .shield {
-            background-color: #3498DB;
-        }
-        
-        .magnet {
-            background-color: #E74C3C;
-            border-radius: 50% 50% 0 0;
-            width: 6vmin;
-            height: 6vmin;
-        }
-        
-        .magnet::after {
-            content: '';
-            position: absolute;
-            bottom: -1vmin;
-            left: 1vmin;
-            width: 4vmin;
-            height: 1vmin;
-            background-color: #E74C3C;
-            border-radius: 0 0 2px 2px;
-        }
-        
-        .time-slow {
-            background-color: #9B59B6;
-            border-radius: 50%;
-        }
-        
-        .time-slow::before {
-            content: '';
-            position: absolute;
-            top: 1vmin;
-            left: 3vmin;
-            width: 0.5vmin;
-            height: 2.5vmin;
-            background-color: white;
-            transform-origin: bottom;
-            transform: rotate(-60deg);
-        }
-        
-        .time-slow::after {
-            content: '';
-            position: absolute;
-            top: 1vmin;
-            left: 3vmin;
-            width: 0.5vmin;
-            height: 2vmin;
-            background-color: white;
-            transform-origin: bottom;
-            transform: rotate(60deg);
-        }
-        
-        .score-multiplier {
-            background-color: #2ECC71;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            color: white;
-            font-size: 3vmin;
-        }
-        
-        .score-multiplier::before {
-            content: '2x';
-            position: absolute;
-        }
-        
-        .ground {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 8vh;
-            background-color: #8B4513;
-            background-image: linear-gradient(to bottom, #8B4513, #654321);
-            z-index: 40;
-        }
-        
-        .ceiling {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: 3vh;
-            background-color: #696969;
-            z-index: 40;
-        }
-        
-        #score-display {
-            position: absolute;
-            top: 4vh;
-            left: 4vw;
-            color: white;
-            font-size: calc(16px + 1vmin);
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        #multiplier-display {
-            position: absolute;
-            top: 4vh;
-            right: 4vw;
-            color: #2ECC71;
-            font-size: calc(16px + 1vmin);
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            font-weight: bold;
-            display: none;
-        }
-        
-        #game-over {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 5vh 5vw;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-            z-index: 200;
-            width: 80%;
-            max-width: 500px;
-        }
-        
-        #game-over h2 {
-            font-size: calc(24px + 1vmin);
-            margin-bottom: 3vh;
-        }
-        
-        #game-over p {
-            font-size: calc(16px + 0.5vmin);
-            margin-bottom: 2vh;
-        }
-        
-        .btn {
-            margin: 2vh 1vw;
-            padding: 2vh 4vw;
-            background-color: #FF5733;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: calc(16px + 0.5vmin);
-            transition: background-color 0.3s;
-            min-width: 40%;
-        }
-        
-        .btn:hover {
-            background-color: #FF7043;
-        }
-        
-        .btn:active {
-            transform: scale(0.95);
-        }
-        
-        #powerup-indicator {
-            position: absolute;
-            top: 10vh;
-            left: 4vw;
-            color: white;
-            font-size: calc(14px + 0.8vmin);
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        #level-indicator {
-            position: absolute;
-            top: 16vh;
-            left: 4vw;
-            color: white;
-            font-size: calc(14px + 0.8vmin);
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        #level-progress {
-            position: absolute;
-            top: 22vh;
-            left: 4vw;
-            width: 30vw;
-            max-width: 200px;
-            min-width: 100px;
-            height: 1.5vh;
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-            overflow: hidden;
-            z-index: 100;
-        }
-        
-        #progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: #FF5733;
-            transition: width 0.3s;
-        }
-        
-        #level-complete {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 5vh 5vw;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-            z-index: 190;
-            width: 80%;
-            max-width: 500px;
-        }
-        
-        #level-complete h2 {
-            margin-bottom: 3vh;
-            font-size: calc(24px + 1vmin);
-        }
-        
-        #level-complete p {
-            margin-bottom: 4vh;
-            font-size: calc(16px + 0.8vmin);
-        }
-        
-        #title-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, #1a2a6c, #b21f1f, #fdbb2d);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            z-index: 300;
-            overflow-y: auto;
-            padding: 4vh 0;
-        }
-        
-        #title {
-            font-size: calc(32px + 2vmin);
-            color: white;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            margin: 3vh 0;
-            text-align: center;
-            padding: 0 20px;
-        }
-        
-        #high-score {
-            font-size: calc(18px + 1vmin);
-            color: gold;
-            margin-bottom: 3vh;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-        }
-        
-        #customization {
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 3vh 4vw;
-            border-radius: 10px;
-            margin: 2vh 0;
-            width: 90%;
-            max-width: 500px;
-        }
-        
-        #customization h2 {
-            color: white;
-            text-align: center;
-            margin-top: 0;
-            font-size: calc(18px + 0.8vmin);
-            margin-bottom: 2vh;
-        }
-        
-        .color-option {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2vh;
-        }
-        
-        .color-option label {
-            color: white;
-            flex: 1;
-            font-size: calc(14px + 0.5vmin);
-            margin-right: 2vw;
-        }
-        
-        .color-option input {
-            flex: 1;
-            width: 100%;
-            height: 4vh;
-            min-height: 30px;
-        }
-        
-        #start-game-btn {
-            padding: 2vh 6vw;
-            font-size: calc(18px + 0.8vmin);
-            background-color: #FF5733;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s;
-            margin: 3vh 0;
-        }
-        
-        #start-game-btn:hover {
-            transform: scale(1.05);
-            background-color: #FF7043;
-        }
-        
-        #start-game-btn:active {
-            transform: scale(0.95);
-        }
-        
-        #level-selection {
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 3vh 4vw;
-            border-radius: 10px;
-            margin: 2vh 0;
-            width: 90%;
-            max-width: 500px;
-            color: white;
-            text-align: center;
-        }
-        
-        #level-selection h2 {
-            margin-top: 0;
-            font-size: calc(18px + 0.8vmin);
-            margin-bottom: 2vh;
-        }
-        
-        .level-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 2vmin;
-            margin-top: 2vh;
-        }
-        
-        .level-btn {
-            width: calc(40px + 2vmin);
-            height: calc(40px + 2vmin);
-            border-radius: 50%;
-            background-color: #3498DB;
-            color: white;
-            border: none;
-            font-size: calc(16px + 0.8vmin);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .level-btn:hover {
-            transform: scale(1.1);
-        }
-        
-        .level-btn:active {
-            transform: scale(0.9);
-        }
-        
-        .level-btn.locked {
-            background-color: #7f8c8d;
-            cursor: not-allowed;
-        }
-        
-        .level-btn.completed {
-            background-color: #2ecc71;
-        }
-        
-        .background-element {
-            position: absolute;
-            z-index: 10;
-        }
-        
-        .cloud {
-            background-color: white;
-            border-radius: 50px;
-            opacity: 0.8;
-        }
-        
-        .mountain {
-            background: linear-gradient(to bottom, #8B4513, #654321);
-            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-        }
-        
-        .effect {
-            position: absolute;
-            z-index: 150;
-            pointer-events: none;
-        }
-        
-        #continue-playing {
-            position: fixed;
-            top: 4vh;
-            right: 4vw;
-            background-color: #FF5733;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 1vh 2vw;
-            font-size: calc(14px + 0.5vmin);
-            cursor: pointer;
-            z-index: 100;
-            display: none;
-        }
-        
-        #time-slow-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(155, 89, 182, 0.2);
-            pointer-events: none;
-            z-index: 80;
-            display: none;
-        }
-        
-        .touch-instruction {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: calc(20px + 1vmin);
-            text-align: center;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-            opacity: 0.8;
-            z-index: 90;
-            pointer-events: none;
-            animation: fade-out 3s forwards;
-        }
-        
-        .magnet-glow {
-            box-shadow: 0 0 10px 5px #E74C3C;
-            animation: pulse 1.5s infinite;
-        }
-        
-        /* Mobile specific styles */
-        @media (max-width: 768px) {
-            #level-complete, #game-over {
-                width: 90%;
-                padding: 4vh 4vw;
-            }
-            
-            .btn {
-                padding: 1.5vh 3vw;
-                margin: 1vh 1vw;
-                min-width: 40%;
-                min-height: 44px;
-                touch-action: manipulation;
-            }
-            
-            #level-indicator {
-                top: 14vh;
-            }
-            
-            #powerup-indicator {
-                top: 8vh;
-            }
-            
-            #level-progress {
-                top: 20vh;
-            }
-            
-            #title-screen {
-                justify-content: flex-start;
-                padding-top: 2vh;
-            }
-            
-            #title {
-                font-size: calc(28px + 1vmin);
-                margin: 2vh 0;
-            }
-            
-            #high-score {
-                margin-bottom: 2vh;
-            }
-            
-            #customization, #level-selection {
-                width: 95%;
-                padding: 2vh 3vw;
-                margin: 1vh 0;
-            }
-            
-            .level-buttons {
-                gap: 2vmin;
-            }
-            
-            #start-game-btn {
-                margin: 2vh 0;
-                padding: 1.5vh 5vw;
-                min-height: 44px;
-            }
-        }
-        
-        @media (max-height: 600px) {
-            #title-screen {
-                justify-content: flex-start;
-                padding-top: 1vh;
-            }
-            
-            #title {
-                margin: 1vh 0;
-            }
-            
-            #high-score {
-                margin-bottom: 1vh;
-            }
-            
-            #customization, #level-selection {
-                padding: 1.5vh 3vw;
-                margin: 1vh 0;
-            }
-            
-            .color-option {
-                margin-bottom: 1vh;
-            }
-            
-            #start-game-btn {
-                margin: 1vh 0;
-            }
-            
-            #level-indicator {
-                top: 12vh;
-            }
-            
-            #powerup-indicator {
-                top: 7vh;
-            }
-            
-            #level-progress {
-                top: 17vh;
-            }
-        }
-        
-        @keyframes float-up {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-50px); opacity: 0; }
-        }
-        
-        @keyframes shield-break {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        
-        @keyframes explosion {
-            0% { transform: scale(0.5); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 10px gold; }
-            100% { box-shadow: 0 0 20px gold; }
-        }
-        
-        @keyframes shine {
-            0% { box-shadow: 0 0 5px gold; }
-            100% { box-shadow: 0 0 15px gold; }
-        }
-        
-        @keyframes laser-pulse {
-            0% { opacity: 0.7; box-shadow: 0 0 10px #FF005C; }
-            100% { opacity: 1; box-shadow: 0 0 15px #FF005C; }
-        }
-        
-        @keyframes fade-out {
-            0% { opacity: 0.8; }
-            70% { opacity: 0.8; }
-            100% { opacity: 0; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jetpack Adventure</title>
+<meta name="description" content="Jetpack Adventure - hold to fly, dodge lasers and missiles, grab coins. 10 levels plus endless mode.">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:'Press Start 2P',monospace;
+    user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;}
+  #c{position:fixed;inset:0;width:100vw;height:100vh;display:block;}
+  .hidden{display:none !important;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:5;}
+  #stats{position:absolute;top:10px;left:12px;font-size:10px;line-height:2;text-shadow:2px 2px 0 #000;}
+  #stats b{color:#ffe14d;font-weight:normal;}
+  #topbar{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:min(520px,56vw);text-align:center;text-shadow:2px 2px 0 #000;}
+  #lvlname{font-size:9px;color:#ffe14d;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .prog{position:relative;height:12px;border:2px solid #fff;background:rgba(0,0,0,.5);}
+  #progfill{height:100%;width:0;background:linear-gradient(90deg,#39ff14,#7df9ff);}
+  #ghost{position:absolute;top:-6px;width:3px;height:20px;margin-left:-1px;background:#ff2e88;box-shadow:0 0 6px #ff2e88;display:none;}
+  #dist{font-size:9px;margin-top:6px;}
+  #pups{position:absolute;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;font-size:9px;}
+  .chip{padding:6px 8px;border:2px solid;background:rgba(0,0,0,.6);text-shadow:1px 1px 0 #000;}
+  #pauseBtn{position:absolute;top:10px;right:12px;width:44px;height:44px;font-family:inherit;font-size:12px;color:#fff;
+    background:rgba(0,0,0,.5);border:2px solid #fff;pointer-events:auto;cursor:pointer;}
+
+  /* ---------- screens ---------- */
+  .screen{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+    background:rgba(3,0,12,.55);padding:14px;overflow:auto;}
+  .panel{width:min(620px,100%);max-height:100%;overflow:auto;text-align:center;padding:22px 18px;
+    background:rgba(10,4,26,.93);border:3px solid #7df9ff;box-shadow:0 0 28px #7df9ff55,inset 0 0 0 2px #000;}
+  h1{font-size:clamp(22px,5vw,40px);line-height:1.25;color:#ffe14d;text-shadow:3px 3px 0 #ff2e88,6px 6px 0 #000;margin-bottom:12px;}
+  h2{font-size:clamp(16px,3.6vw,26px);color:#ff2e88;text-shadow:3px 3px 0 #000;margin-bottom:14px;line-height:1.3;}
+  .tag{font-size:9px;color:#7df9ff;line-height:1.8;margin-bottom:14px;}
+  .wallet{font-size:10px;margin-bottom:14px;line-height:1.9;}
+  .wallet b{color:#ffe14d;font-weight:normal;}
+  .coin{display:inline-block;width:11px;height:11px;border-radius:50%;background:#ffd23f;border:2px solid #b8860b;vertical-align:-1px;}
+  #levelGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+  .lv{font-family:inherit;font-size:12px;color:#fff;background:#160828;border:2px solid #4a2d6e;padding:9px 2px;cursor:pointer;line-height:1.7;}
+  .lv small{display:block;font-size:7px;color:#8a7aa8;}
+  .lv.done{border-color:#39ff14;}
+  .lv.done small{color:#39ff14;}
+  .lv.next{border-color:#ffe14d;box-shadow:0 0 10px #ffe14d66;}
+  .lv:disabled{opacity:.35;cursor:not-allowed;}
+  .lv:hover:not(:disabled){border-color:#7df9ff;}
+  .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .btn{font-family:inherit;font-size:10px;color:#fff;background:#160828;border:2px solid #4a2d6e;padding:11px 12px;cursor:pointer;}
+  .btn:hover:not(:disabled){border-color:#7df9ff;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.big{font-size:14px;padding:14px 22px;background:#ff2e88;border-color:#fff;color:#07010f;}
+  .btn.big:hover{background:#ffe14d;}
+  .keys{font-size:7px;color:#8a7aa8;line-height:2;margin-top:14px;}
+  .back{display:inline-block;margin-top:12px;font-size:9px;color:#7df9ff;text-decoration:none;}
+  .note{font-size:8px;color:#39ff14;margin-top:10px;line-height:1.8;}
+  .stats{font-size:11px;line-height:2.3;margin-bottom:12px;}
+  .stats b{color:#ffe14d;font-weight:normal;}
+  .stats .hi{color:#39ff14;}
+  .upg{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:10px;border:2px solid #2a1846;margin-bottom:8px;}
+  .upg .n{font-size:10px;color:#ffe14d;margin-bottom:6px;}
+  .upg .d{font-size:8px;color:#c9b6ff;line-height:1.6;}
+  .upg .pips{margin-top:6px;font-size:9px;color:#39ff14;letter-spacing:2px;}
+  .upg .btn{white-space:nowrap;}
+</style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="player">
-            <div class="player-head"></div>
-            <div class="player-body"></div>
-            <div class="player-arm left"></div>
-            <div class="player-arm right"></div>
-            <div class="player-leg left"></div>
-            <div class="player-leg right"></div>
-            <div class="jetpack">
-                <div class="jetpack-flame"></div>
-            </div>
-        </div>
-        <div class="ground"></div>
-        <div class="ceiling"></div>
-        <div id="score-display">Score: 0</div>
-        <div id="multiplier-display">x2</div>
-        <div id="powerup-indicator"></div>
-        <div id="level-indicator">Level: 1</div>
-        <div id="level-progress">
-            <div id="progress-bar"></div>
-        </div>
-        <div id="time-slow-overlay"></div>
-        <button id="continue-playing">Resume Game</button>
-        <div id="level-complete">
-            <h2>Level Complete!</h2>
-            <p>You completed Level <span id="completed-level">1</span>!</p>
-            <button id="continue-btn" class="btn">Continue to Level <span id="next-level">2</span></button>
-            <button id="level-menu-btn" class="btn">Back to Menu</button>
-        </div>
-        <div id="game-over">
-            <h2>Game Over</h2>
-            <p id="final-score">Your Score: 0</p>
-            <p id="new-high-score" style="color: gold; display: none;">New High Score!</p>
-            <button id="restart-btn" class="btn">Play Again</button>
-            <button id="menu-btn" class="btn">Main Menu</button>
-        </div>
+<canvas id="c"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="stats">SCORE <b id="hScore">0</b><br>COINS <b id="hCoins">0</b></div>
+  <div id="topbar">
+    <div id="lvlname"></div>
+    <div class="prog" id="prog"><div id="progfill"></div><div id="ghost"></div></div>
+    <div id="dist">0m</div>
+  </div>
+  <div id="pups"></div>
+  <button id="pauseBtn" aria-label="Pause">II</button>
+</div>
+
+<div id="menu" class="screen">
+  <div class="panel">
+    <h1>JETPACK<br>ADVENTURE</h1>
+    <div class="tag">HOLD TO FLY. LET GO TO DROP.<br>DODGE THE LASERS. GRAB THE COINS.</div>
+    <div class="wallet"><span class="coin"></span> <b id="mWallet">0</b> &nbsp;&nbsp; HIGH SCORE <b id="mHigh">0</b></div>
+    <button class="btn big" id="playBtn">PLAY</button>
+    <div class="tag" style="margin:16px 0 8px">LEVELS</div>
+    <div id="levelGrid"></div>
+    <div class="row">
+      <button class="btn" id="endlessBtn">ENDLESS</button>
+      <button class="btn" id="shopBtn">SHOP</button>
+      <button class="btn" id="muteBtn">SOUND ON</button>
     </div>
+    <div class="note hidden" id="migrated">OLD SAVE FOUND - YOUR PROGRESS CARRIED OVER.</div>
+    <div class="keys">SPACE / CLICK / TAP + HOLD TO FLY &middot; P OR ESC PAUSE &middot; M MUTE</div>
+    <a class="back" href="../">&lt; BACK TO ARCADE</a>
+  </div>
+</div>
 
-    <div id="title-screen">
-        <h1 id="title">JETPACK ADVENTURE</h1>
-        <div id="high-score">High Score: 0</div>
-        
-        <div id="level-selection">
-            <h2>Select Level</h2>
-            <div class="level-buttons" id="level-buttons-container">
-                <!-- Level buttons will be generated here -->
-            </div>
-        </div>
-        
-        <div id="customization">
-            <h2>Customize Character</h2>
-            <div class="color-option">
-                <label for="body-color">Body Color:</label>
-                <input type="color" id="body-color" value="#FF5733">
-            </div>
-            <div class="color-option">
-                <label for="skin-color">Skin Color:</label>
-                <input type="color" id="skin-color" value="#FFC0CB">
-            </div>
-            <div class="color-option">
-                <label for="pants-color">Pants Color:</label>
-                <input type="color" id="pants-color" value="#4169E1">
-            </div>
-            <div class="color-option">
-                <label for="jetpack-color">Jetpack Color:</label>
-                <input type="color" id="jetpack-color" value="#555555">
-            </div>
-        </div>
-        
-        <button id="start-game-btn" class="btn">START GAME</button>
-    </div>
+<div id="shop" class="screen hidden">
+  <div class="panel">
+    <h2>SHOP</h2>
+    <div class="wallet"><span class="coin"></span> <b id="sWallet">0</b></div>
+    <div id="upgList"></div>
+    <button class="btn" id="shopBack" style="margin-top:8px">BACK</button>
+  </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Game elements
-            const gameContainer = document.getElementById('game-container');
-            const player = document.getElementById('player');
-            const jetpackFlame = document.querySelector('.jetpack-flame');
-            const scoreDisplay = document.getElementById('score-display');
-            const multiplierDisplay = document.getElementById('multiplier-display');
-            const gameOverScreen = document.getElementById('game-over');
-            const finalScoreDisplay = document.getElementById('final-score');
-            const newHighScoreText = document.getElementById('new-high-score');
-            const restartBtn = document.getElementById('restart-btn');
-            const menuBtn = document.getElementById('menu-btn');
-            const powerupIndicator = document.getElementById('powerup-indicator');
-            const levelIndicator = document.getElementById('level-indicator');
-            const progressBar = document.getElementById('progress-bar');
-            const levelCompleteMessage = document.getElementById('level-complete');
-            const completedLevelSpan = document.getElementById('completed-level');
-            const nextLevelSpan = document.getElementById('next-level');
-            const continueBtn = document.getElementById('continue-btn');
-            const levelMenuBtn = document.getElementById('level-menu-btn');
-            const titleScreen = document.getElementById('title-screen');
-            const highScoreDisplay = document.getElementById('high-score');
-            const startGameBtn = document.getElementById('start-game-btn');
-            const levelButtonsContainer = document.getElementById('level-buttons-container');
-            const continuePlayingBtn = document.getElementById('continue-playing');
-            const timeSlowOverlay = document.getElementById('time-slow-overlay');
-            
-            // Mobile detection
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            // Show touch instruction if on mobile
-            if (isMobile) {
-                const touchInstruction = document.createElement('div');
-                touchInstruction.className = 'touch-instruction';
-                touchInstruction.textContent = 'TAP & HOLD ANYWHERE TO FLY';
-                gameContainer.appendChild(touchInstruction);
-                
-                setTimeout(() => {
-                    if (touchInstruction.parentNode === gameContainer) {
-                        gameContainer.removeChild(touchInstruction);
-                    }
-                }, 3000);
-            }
-            
-            // Game dimensions
-            let groundHeight, ceilingHeight, playerHeight, playerWidth, playerStartX;
-            
-            // Function to update responsive dimensions
-            function updateDimensions() {
-                // Get dimensions in pixels based on viewport units
-                const vh = window.innerHeight / 100;
-                const vw = window.innerWidth / 100;
-                const vmin = Math.min(vh, vw);
-                
-                groundHeight = 8 * vh;
-                ceilingHeight = 3 * vh;
-                playerHeight = 10 * vmin;
-                playerWidth = 7 * vmin;
-                playerStartX = 15 * vw;
-                
-                // Update player position
-                if (player) {
-                    player.style.left = `${playerStartX}px`;
-                }
-            }
-            
-            // Initial dimension setup
-            updateDimensions();
-            
-            // Update dimensions on resize
-            window.addEventListener('resize', function() {
-                updateDimensions();
-                
-                // If game is active, adjust player position
-                if (gameActive && !gameOver && !levelPaused) {
-                    const groundOffset = groundHeight + 10;
-                    const maxY = gameContainer.clientHeight - playerHeight - groundHeight;
-                    
-                    // Ensure player stays within bounds
-                    playerY = Math.min(maxY, Math.max(ceilingHeight, playerY));
-                    player.style.bottom = `${playerY}px`;
-                }
-            });
-            
-            // Character customization elements
-            const bodyColorInput = document.getElementById('body-color');
-            const skinColorInput = document.getElementById('skin-color');
-            const pantsColorInput = document.getElementById('pants-color');
-            const jetpackColorInput = document.getElementById('jetpack-color');
-            
-            // Apply character colors
-            function applyCharacterColors() {
-                document.querySelector('.player-body').style.backgroundColor = bodyColorInput.value;
-                document.querySelector('.player-head').style.backgroundColor = skinColorInput.value;
-                document.querySelector('.player-arm.left').style.backgroundColor = skinColorInput.value;
-                document.querySelector('.player-arm.right').style.backgroundColor = skinColorInput.value;
-                document.querySelector('.player-leg.left').style.backgroundColor = pantsColorInput.value;
-                document.querySelector('.player-leg.right').style.backgroundColor = pantsColorInput.value;
-                document.querySelector('.jetpack').style.backgroundColor = jetpackColorInput.value;
-                
-                // Save colors to localStorage
-                localStorage.setItem('bodyColor', bodyColorInput.value);
-                localStorage.setItem('skinColor', skinColorInput.value);
-                localStorage.setItem('pantsColor', pantsColorInput.value);
-                localStorage.setItem('jetpackColor', jetpackColorInput.value);
-            }
-            
-            // Load saved colors
-            function loadSavedColors() {
-                const savedBodyColor = localStorage.getItem('bodyColor');
-                const savedSkinColor = localStorage.getItem('skinColor');
-                const savedPantsColor = localStorage.getItem('pantsColor');
-                const savedJetpackColor = localStorage.getItem('jetpackColor');
-                
-                if (savedBodyColor) bodyColorInput.value = savedBodyColor;
-                if (savedSkinColor) skinColorInput.value = savedSkinColor;
-                if (savedPantsColor) pantsColorInput.value = savedPantsColor;
-                if (savedJetpackColor) jetpackColorInput.value = savedJetpackColor;
-                
-                applyCharacterColors();
-            }
-            
-            // Load saved colors on start
-            loadSavedColors();
-            
-            // Color input event listeners
-            bodyColorInput.addEventListener('input', applyCharacterColors);
-            skinColorInput.addEventListener('input', applyCharacterColors);
-            pantsColorInput.addEventListener('input', applyCharacterColors);
-            jetpackColorInput.addEventListener('input', applyCharacterColors);
-            
-            // Level configuration
-            const levels = [
-                { distance: 5000, obstacleFrequency: 0.02, obstacleSpeed: 5, background: '#87CEEB' },
-                { distance: 7500, obstacleFrequency: 0.025, obstacleSpeed: 5.5, background: '#78A7C5' },
-                { distance: 10000, obstacleFrequency: 0.03, obstacleSpeed: 6, background: '#6986AB' },
-                { distance: 12500, obstacleFrequency: 0.035, obstacleSpeed: 6.5, background: '#5A6591' },
-                { distance: 15000, obstacleFrequency: 0.04, obstacleSpeed: 7, background: '#4B4577' },
-                { distance: 17500, obstacleFrequency: 0.045, obstacleSpeed: 7.5, background: '#3C245D' },
-                { distance: 20000, obstacleFrequency: 0.05, obstacleSpeed: 8, background: '#2D0243' },
-                { distance: 25000, obstacleFrequency: 0.055, obstacleSpeed: 8.5, background: '#1E0029' },
-                { distance: 30000, obstacleFrequency: 0.06, obstacleSpeed: 9, background: '#0F001A' },
-                { distance: 35000, obstacleFrequency: 0.07, obstacleSpeed: 10, background: '#000000' }
-            ];
-            
-            // Game state
-            let isJetpackActive = false;
-            let playerY = gameContainer.clientHeight / 2;
-            let playerVelocity = 0;
-            let gravity = 0.5;
-            let jetpackForce = 0.8;
-            let gameSpeed = 5;
-            let baseGameSpeed = 5;
-            let originalGameSpeed = 5;
-            let score = 0;
-            let scoreMultiplier = 1;
-            let highScore = localStorage.getItem('highScore') || 0;
-            let obstacles = [];
-            let coins = [];
-            let powerups = [];
-            let backgroundElements = [];
-            let gameOver = false;
-            let levelPaused = false;
-            let animationFrameId = null;
-            let gameActive = false;
-            let currentLevel = parseInt(localStorage.getItem('currentLevel')) || 1;
-            let distanceTraveled = 0;
-            let levelTarget = levels[currentLevel - 1]?.distance || levels[0].distance;
-            let obstacleFrequency = levels[currentLevel - 1]?.obstacleFrequency || levels[0].obstacleFrequency;
-            let completedLevels = JSON.parse(localStorage.getItem('completedLevels')) || [];
-            let hasSavedGame = localStorage.getItem('hasSavedGame') === 'true';
-            
-            // Update high score display
-            highScoreDisplay.textContent = `High Score: ${highScore}`;
-            
-            // Check if there's a saved game
-            if (hasSavedGame) {
-                continuePlayingBtn.style.display = 'block';
-            }
-            
-            // Player state
-            let hasShield = false;
-            let shieldTimeLeft = 0;
-            let isInvincible = false;
-            let invincibilityTimeLeft = 0;
-            let invincibilityGracePeriod = 0;
-            let hasCoinMagnet = false;
-            let coinMagnetTimeLeft = 0;
-            let hasTimeSlow = false;
-            let timeSlowTimeLeft = 0;
-            let hasScoreMultiplier = false;
-            let scoreMultiplierTimeLeft = 0;
-            let magnetTickCounter = 0; // For staggered magnet updates
-            
-            // Initialize player position
-            player.style.bottom = `${groundHeight + 10}px`;
-            
-            // Generate level selection buttons
-            function generateLevelButtons() {
-                levelButtonsContainer.innerHTML = '';
-                for (let i = 0; i < levels.length; i++) {
-                    const levelBtn = document.createElement('button');
-                    levelBtn.className = 'level-btn';
-                    levelBtn.textContent = i + 1;
-                    
-                    // Show locked/completed status
-                    if (i > 0 && !completedLevels.includes(i)) {
-                        if (!completedLevels.includes(i - 1)) {
-                            levelBtn.classList.add('locked');
-                        }
-                    }
-                    
-                    if (completedLevels.includes(i)) {
-                        levelBtn.classList.add('completed');
-                    }
-                    
-                    levelBtn.addEventListener('click', function() {
-                        // Only allow selecting unlocked levels
-                        if (!levelBtn.classList.contains('locked')) {
-                            selectLevel(i);
-                        }
-                    });
-                    
-                    levelButtonsContainer.appendChild(levelBtn);
-                }
-            }
-            
-            // Event listeners for game controls
-            function activateJetpack(e) {
-                e.preventDefault();
-                if (gameActive && !gameOver && !levelPaused) {
-                    isJetpackActive = true;
-                    jetpackFlame.style.opacity = '1';
-                    
-                    // Animate arms when jetpack is active
-                    document.querySelector('.player-arm.left').style.transform = 'rotate(-30deg)';
-                    document.querySelector('.player-arm.right').style.transform = 'rotate(30deg)';
-                }
-            }
-            
-            function deactivateJetpack(e) {
-                e.preventDefault();
-                if (gameActive && !gameOver && !levelPaused) {
-                    isJetpackActive = false;
-                    jetpackFlame.style.opacity = '0';
-                    
-                    // Reset arm position
-                    document.querySelector('.player-arm.left').style.transform = 'rotate(0deg)';
-                    document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
-                }
-            }
-            
-            // Add game control event listeners for whole screen
-            function addGameControls() {
-                if (isMobile) {
-                    // Mobile touch controls - entire screen
-                    gameContainer.addEventListener('touchstart', activateJetpack, {passive: false});
-                    gameContainer.addEventListener('touchend', deactivateJetpack, {passive: false});
-                    
-                    // Prevent default behavior for touch events on the game container
-                    gameContainer.addEventListener('touchmove', function(e) {
-                        e.preventDefault();
-                    }, { passive: false });
-                } else {
-                    // Desktop controls
-                    gameContainer.addEventListener('mousedown', activateJetpack);
-                    gameContainer.addEventListener('mouseup', deactivateJetpack);
-                }
-                
-                // Keyboard controls work on both
-                document.addEventListener('keydown', handleKeyDown);
-                document.addEventListener('keyup', handleKeyUp);
-            }
-            
-            function handleKeyDown(e) {
-                if (e.code === 'Space') activateJetpack(e);
-            }
-            
-            function handleKeyUp(e) {
-                if (e.code === 'Space') deactivateJetpack(e);
-            }
-            
-            // Remove game control event listeners
-            function removeGameControls() {
-                if (isMobile) {
-                    gameContainer.removeEventListener('touchstart', activateJetpack);
-                    gameContainer.removeEventListener('touchend', deactivateJetpack);
-                } else {
-                    gameContainer.removeEventListener('mousedown', activateJetpack);
-                    gameContainer.removeEventListener('mouseup', deactivateJetpack);
-                }
-                
-                document.removeEventListener('keydown', handleKeyDown);
-                document.removeEventListener('keyup', handleKeyUp);
-            }
-            
-            // Continue playing saved game
-            continuePlayingBtn.addEventListener('click', function() {
-                const savedLevel = parseInt(localStorage.getItem('currentLevel')) || 1;
-                const savedScore = parseInt(localStorage.getItem('savedScore')) || 0;
-                
-                selectLevel(savedLevel - 1, savedScore);
-            });
-            
-            // Select level
-            function selectLevel(levelIndex, savedScore = 0) {
-                currentLevel = levelIndex + 1;
-                levelTarget = levels[levelIndex].distance;
-                obstacleFrequency = levels[levelIndex].obstacleFrequency;
-                baseGameSpeed = levels[levelIndex].obstacleSpeed;
-                gameSpeed = baseGameSpeed;
-                originalGameSpeed = baseGameSpeed;
-                
-                // Set score if continuing a saved game
-                if (savedScore > 0) {
-                    score = savedScore;
-                }
-                
-                // Set background color based on level
-                gameContainer.style.backgroundColor = levels[levelIndex].background;
-                
-                // Generate background elements based on level
-                generateBackgroundElements(levelIndex);
-                
-                // Save current level
-                localStorage.setItem('currentLevel', currentLevel);
-                localStorage.setItem('hasSavedGame', 'true');
-                
-                startGame();
-            }
-            
-            // Event handlers for buttons
-            startGameBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (e.type === 'click' || e.type === 'touchend') {
-                    selectLevel(0); // Start with level 1
-                }
-            });
-            
-            // Add mobile optimized touch events for popup buttons
-            continueBtn.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                continueToNextLevel();
-            });
-            
-            continueBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                continueToNextLevel();
-            });
-            
-            levelMenuBtn.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                showMainMenu();
-            });
-            
-            levelMenuBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                showMainMenu();
-            });
-            
-            restartBtn.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                restartGame();
-            });
-            
-            restartBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                restartGame();
-            });
-            
-            menuBtn.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                showMainMenu();
-            });
-            
-            menuBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                showMainMenu();
-            });
-            
-            // Save game state
-            function saveGameState() {
-                localStorage.setItem('currentLevel', currentLevel);
-                localStorage.setItem('savedScore', score);
-                localStorage.setItem('hasSavedGame', 'true');
-            }
-            
-            // Generate background elements based on level
-            function generateBackgroundElements(levelIndex) {
-                // Clear existing background elements
-                while (backgroundElements.length > 0) {
-                    if (backgroundElements[0].element.parentNode === gameContainer) {
-                        gameContainer.removeChild(backgroundElements[0].element);
-                    }
-                    backgroundElements.shift();
-                }
-                
-                // Number of elements scales with level
-                const numClouds = Math.max(3, 6 - levelIndex);
-                const numMountains = Math.min(5, Math.floor(levelIndex / 2) + 1);
-                
-                // Add clouds
-                for (let i = 0; i < numClouds; i++) {
-                    createBackgroundElement('cloud');
-                }
-                
-                // Add mountains in later levels
-                if (levelIndex >= 2) {
-                    for (let i = 0; i < numMountains; i++) {
-                        createBackgroundElement('mountain');
-                    }
-                }
-            }
-            
-            // Create a background element
-            function createBackgroundElement(type) {
-                const element = document.createElement('div');
-                element.className = 'background-element ' + type;
-                
-                let width, height, bottom, left;
-                
-                if (type === 'cloud') {
-                    const vw = window.innerWidth / 100;
-                    const vh = window.innerHeight / 100;
-                    
-                    width = Math.floor(Math.random() * 20 * vw) + 10 * vw;
-                    height = Math.floor(Math.random() * 4 * vh) + 3 * vh;
-                    bottom = Math.floor(Math.random() * (gameContainer.clientHeight - 200)) + 150;
-                    left = Math.floor(Math.random() * gameContainer.clientWidth);
-                    
-                    // Add some depth/layering to clouds
-                    const opacity = Math.random() * 0.4 + 0.4;
-                    element.style.opacity = opacity;
-                    
-                    // Slower movement for distant clouds
-                    const speed = Math.max(1, baseGameSpeed * (opacity - 0.3));
-                    
-                    backgroundElements.push({
-                        element: element,
-                        type: type,
-                        position: left,
-                        width: width,
-                        speed: speed
-                    });
-                } else if (type === 'mountain') {
-                    const vw = window.innerWidth / 100;
-                    const vh = window.innerHeight / 100;
-                    
-                    width = Math.floor(Math.random() * 30 * vw) + 20 * vw;
-                    height = Math.floor(Math.random() * 15 * vh) + 10 * vh;
-                    bottom = groundHeight;
-                    left = Math.floor(Math.random() * gameContainer.clientWidth);
-                    
-                    // Mountains move slower than game speed
-                    const speed = baseGameSpeed * 0.3;
-                    
-                    backgroundElements.push({
-                        element: element,
-                        type: type,
-                        position: left,
-                        width: width,
-                        speed: speed
-                    });
-                }
-                
-                element.style.width = `${width}px`;
-                element.style.height = `${height}px`;
-                element.style.bottom = `${bottom}px`;
-                element.style.left = `${left}px`;
-                
-                gameContainer.appendChild(element);
-            }
-            
-            function startGame() {
-                titleScreen.style.display = 'none';
-                continuePlayingBtn.style.display = 'none';
-                gameActive = true;
-                levelPaused = false;
-                levelIndicator.textContent = `Level: ${currentLevel}`;
-                scoreDisplay.textContent = `Score: ${score}`;
-                distanceTraveled = 0;
-                updateProgress();
-                
-                // Make sure player is at a valid starting position
-                playerY = gameContainer.clientHeight / 2;
-                player.style.bottom = `${playerY}px`;
-                
-                addGameControls();
-                gameLoop();
-            }
-            
-            function showMainMenu() {
-                // Save game state before going to menu
-                if (gameActive && !gameOver) {
-                    saveGameState();
-                }
-                
-                gameOverScreen.style.display = 'none';
-                levelCompleteMessage.style.display = 'none';
-                
-                if (hasSavedGame) {
-                    continuePlayingBtn.style.display = 'block';
-                }
-                
-                titleScreen.style.display = 'flex';
-                gameActive = false;
-                gameOver = false;
-                levelPaused = false;
-                resetGameState();
-                generateLevelButtons();
-            }
-            
-            function continueToNextLevel() {
-                console.log("Continue to next level clicked!");
-                levelCompleteMessage.style.display = 'none';
-                levelPaused = false;
-                
-                // Move to next level
-                currentLevel++;
-                levelTarget = levels[currentLevel - 1].distance;
-                obstacleFrequency = levels[currentLevel - 1].obstacleFrequency;
-                baseGameSpeed = levels[currentLevel - 1].obstacleSpeed;
-                gameSpeed = baseGameSpeed;
-                originalGameSpeed = baseGameSpeed;
-                distanceTraveled = 0;
-                
-                // Save current level
-                localStorage.setItem('currentLevel', currentLevel);
-                localStorage.setItem('hasSavedGame', 'true');
-                
-                // Update level indicator
-                levelIndicator.textContent = `Level: ${currentLevel}`;
-                
-                // Update background color
-                gameContainer.style.backgroundColor = levels[currentLevel - 1].background;
-                
-                // Generate new background elements
-                generateBackgroundElements(currentLevel - 1);
-                
-                updateProgress();
-                
-                // Resume game loop
-                gameLoop();
-            }
-            
-            function updatePlayerPosition() {
-                if (isJetpackActive) {
-                    playerVelocity += jetpackForce;
-                }
-                
-                playerVelocity -= gravity;
-                playerY += playerVelocity;
-                
-                // Boundary checks
-                const maxY = gameContainer.clientHeight - playerHeight - groundHeight;
-                const minY = ceilingHeight;
-                
-                if (playerY > maxY) {
-                    playerY = maxY;
-                    playerVelocity = 0;
-                }
-                
-                if (playerY < minY) {
-                    playerY = minY;
-                    playerVelocity = 0;
-                }
-                
-                player.style.bottom = `${playerY}px`;
-                
-                // Apply tilt based on velocity
-                const tiltAngle = Math.max(-20, Math.min(20, playerVelocity * 2));
-                player.style.transform = `rotate(${tiltAngle}deg)`;
-            }
-            
-            function createObstacle() {
-                if (Math.random() < obstacleFrequency) {
-                    // Determine laser type and position
-                    let laserType, height, width, bottom, laserClass;
-                    const containerHeight = gameContainer.clientHeight;
-                    const vw = window.innerWidth / 100;
-                    const vh = window.innerHeight / 100;
-                    const vmin = Math.min(vh, vw);
-                    
-                    // Random laser type (vertical or horizontal)
-                    if (Math.random() < 0.5) {
-                        // Vertical laser
-                        laserType = 'vertical';
-                        laserClass = 'vertical-laser';
-                        width = 1.2 * vmin;
-                        
-                        // Determine height and position based on level
-                        if (currentLevel <= 3) {
-                            // Shorter lasers in lower levels
-                            height = Math.floor(Math.random() * (containerHeight / 3)) + 50;
-                            
-                            // Either from ground or ceiling
-                            if (Math.random() < 0.5) {
-                                bottom = groundHeight;
-                            } else {
-                                bottom = containerHeight - height - ceilingHeight;
-                            }
-                        } else if (currentLevel <= 6) {
-                            // Medium lasers in middle levels
-                            height = Math.floor(Math.random() * (containerHeight / 2)) + 100;
-                            
-                            // More varied positions
-                            const position = Math.random();
-                            if (position < 0.4) {
-                                bottom = groundHeight;
-                            } else if (position < 0.8) {
-                                bottom = containerHeight - height - ceilingHeight;
-                            } else {
-                                // Some floating lasers
-                                const availableSpace = containerHeight - groundHeight - ceilingHeight - height;
-                                bottom = groundHeight + Math.floor(Math.random() * availableSpace);
-                            }
-                        } else {
-                            // Longer lasers in higher levels
-                            height = Math.floor(Math.random() * (containerHeight * 0.7)) + 150;
-                            
-                            // More challenging positions
-                            const position = Math.random();
-                            if (position < 0.3) {
-                                bottom = groundHeight;
-                            } else if (position < 0.6) {
-                                bottom = containerHeight - height - ceilingHeight;
-                            } else {
-                                // More floating lasers
-                                const availableSpace = containerHeight - groundHeight - ceilingHeight - height;
-                                bottom = groundHeight + Math.floor(Math.random() * availableSpace);
-                            }
-                        }
-                    } else {
-                        // Horizontal laser
-                        laserType = 'horizontal';
-                        laserClass = 'horizontal-laser';
-                        height = 1.2 * vmin;
-                        width = Math.random() < 0.3 ? 8 * vw : 15 * vw; // Sometimes shorter, sometimes longer
-                        
-                        // Position horizontal lasers throughout the screen height
-                        const minBottom = groundHeight + 8 * vh;
-                        const maxBottom = containerHeight - ceilingHeight - 15 * vh;
-                        bottom = Math.floor(Math.random() * (maxBottom - minBottom)) + minBottom;
-                    }
-                    
-                    // Create laser emitter (the source of the laser)
-                    const createEmitter = (position, isStart) => {
-                        const emitter = document.createElement('div');
-                        emitter.className = 'laser-emitter';
-                        
-                        if (laserType === 'vertical') {
-                            emitter.style.bottom = isStart ? `${bottom + height - 10}px` : `${bottom - 10}px`;
-                            emitter.style.left = `${position - 6}px`;
-                        } else {
-                            emitter.style.bottom = `${bottom - 6}px`;
-                            emitter.style.left = isStart ? `${position - 20}px` : `${position}px`;
-                        }
-                        
-                        gameContainer.appendChild(emitter);
-                        
-                        return emitter;
-                    };
-                    
-                    // Create the laser beam
-                    const laser = document.createElement('div');
-                    laser.className = `obstacle ${laserClass}`;
-                    
-                    laser.style.height = `${height}px`;
-                    laser.style.width = `${width}px`;
-                    laser.style.bottom = `${bottom}px`;
-                    laser.style.left = `${gameContainer.clientWidth}px`;
-                    
-                    // Add pulsing effect to make the laser look more dynamic
-                    laser.style.animation = 'laser-pulse 0.5s infinite alternate';
-                    
-                    gameContainer.appendChild(laser);
-                    
-                    // Create emitters
-                    let startEmitter, endEmitter;
-                    if (laserType === 'vertical') {
-                        startEmitter = createEmitter(gameContainer.clientWidth + 4, true);
-                        endEmitter = createEmitter(gameContainer.clientWidth + 4, false);
-                    } else {
-                        startEmitter = createEmitter(gameContainer.clientWidth, true);
-                        endEmitter = createEmitter(gameContainer.clientWidth + width, false);
-                    }
-                    
-                    obstacles.push({
-                        element: laser,
-                        emitters: [startEmitter, endEmitter],
-                        position: gameContainer.clientWidth,
-                        width: width,
-                        height: height,
-                        bottom: bottom,
-                        type: laserType
-                    });
-                }
-            }
-            
-            function createCoin() {
-                // Coin frequency increases with level
-                const coinChance = 0.03 + (currentLevel * 0.005);
-                
-                if (Math.random() < coinChance) {
-                    const coin = document.createElement('div');
-                    coin.className = 'coin';
-                    
-                    // Special magnet coin with 15% chance or if we're in higher levels
-                    const isMagnetCoin = Math.random() < 0.15 || currentLevel > 5;
-                    if (isMagnetCoin) {
-                        coin.classList.add('magnet-coin');
-                    }
-                    
-                    const coinSize = 4 * Math.min(window.innerWidth, window.innerHeight) / 100;
-                    coin.style.width = `${coinSize}px`;
-                    coin.style.height = `${coinSize}px`;
-                    
-                    let bottom;
-                    
-                    // Create coin patterns based on level
-                    if (currentLevel <= 3) {
-                        // Simple coin placement
-                        bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - coinSize)) + groundHeight;
-                    } else {
-                        // Create coin patterns in higher levels
-                        const pattern = Math.random();
-                        
-                        if (pattern < 0.3) {
-                            // Single coins
-                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - coinSize)) + groundHeight;
-                        } else if (pattern < 0.6) {
-                            // Create a horizontal row of coins
-                            bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - coinSize)) + groundHeight;
-                            
-                            // Add additional coins in a row
-                            const count = Math.floor(Math.random() * 3) + 2;
-                            for (let i = 1; i < count; i++) {
-                                setTimeout(() => {
-                                    if (gameActive && !gameOver && !levelPaused) {
-                                        const extraCoin = document.createElement('div');
-                                        extraCoin.className = 'coin';
-                                        if (isMagnetCoin) {
-                                            extraCoin.classList.add('magnet-coin');
-                                        }
-                                        extraCoin.style.width = `${coinSize}px`;
-                                        extraCoin.style.height = `${coinSize}px`;
-                                        extraCoin.style.bottom = `${bottom}px`;
-                                        extraCoin.style.left = `${gameContainer.clientWidth}px`;
-                                        gameContainer.appendChild(extraCoin);
-                                        coins.push({
-                                            element: extraCoin,
-                                            position: gameContainer.clientWidth,
-                                            bottom: bottom,
-                                            size: coinSize,
-                                            isMagnetCoin: isMagnetCoin
-                                        });
-                                    }
-                                }, i * 200);
-                            }
-                        } else {
-                            // Create a vertical line of coins
-                            const baseBottom = Math.max(groundHeight + 50, Math.min(gameContainer.clientHeight - 150, Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - 100)) + groundHeight));
-                            bottom = baseBottom;
-                            
-                            // Add additional coins in a column
-                            const count = Math.floor(Math.random() * 3) + 2;
-                            for (let i = 1; i < count; i++) {
-                                setTimeout(() => {
-                                    if (gameActive && !gameOver && !levelPaused) {
-                                        const extraCoin = document.createElement('div');
-                                        extraCoin.className = 'coin';
-                                        if (isMagnetCoin) {
-                                            extraCoin.classList.add('magnet-coin');
-                                        }
-                                        extraCoin.style.width = `${coinSize}px`;
-                                        extraCoin.style.height = `${coinSize}px`;
-                                        extraCoin.style.bottom = `${baseBottom + (i * coinSize * 2)}px`;
-                                        extraCoin.style.left = `${gameContainer.clientWidth}px`;
-                                        gameContainer.appendChild(extraCoin);
-                                        coins.push({
-                                            element: extraCoin,
-                                            position: gameContainer.clientWidth,
-                                            bottom: baseBottom + (i * coinSize * 2),
-                                            size: coinSize,
-                                            isMagnetCoin: isMagnetCoin
-                                        });
-                                    }
-                                }, i * 200);
-                            }
-                        }
-                    }
-                    
-                    coin.style.bottom = `${bottom}px`;
-                    coin.style.left = `${gameContainer.clientWidth}px`;
-                    
-                    // Add shine animation
-                    if (!isMagnetCoin) {
-                        coin.style.animation = 'shine 1s infinite alternate';
-                    }
-                    
-                    gameContainer.appendChild(coin);
-                    coins.push({
-                        element: coin,
-                        position: gameContainer.clientWidth,
-                        bottom: bottom,
-                        size: coinSize,
-                        isMagnetCoin: isMagnetCoin
-                    });
-                }
-            }
-            
-            function createPowerup() {
-                // Powerup frequency based on level
-                const powerupChance = 0.005 + (currentLevel * 0.001);
-                
-                if (Math.random() < powerupChance) {
-                    const powerup = document.createElement('div');
-                    powerup.className = 'powerup';
-                    
-                    const powerupSize = 6 * Math.min(window.innerWidth, window.innerHeight) / 100;
-                    powerup.style.width = `${powerupSize}px`;
-                    powerup.style.height = `${powerupSize}px`;
-                    
-                    // Choose a powerup type based on probabilities
-                    let type;
-                    const rand = Math.random();
-                    
-                    if (rand < 0.25) {
-                        type = 'shield';
-                        powerup.classList.add('shield');
-                    } else if (rand < 0.5) {
-                        type = 'invincibility';
-                        powerup.classList.add('invincibility');
-                    } else if (rand < 0.7) {
-                        type = 'magnet';
-                        powerup.classList.add('magnet');
-                    } else if (rand < 0.9) {
-                        type = 'time-slow';
-                        powerup.classList.add('time-slow');
-                    } else {
-                        type = 'score-multiplier';
-                        powerup.classList.add('score-multiplier');
-                    }
-                    
-                    const bottom = Math.floor(Math.random() * (gameContainer.clientHeight - groundHeight - ceilingHeight - powerupSize)) + groundHeight;
-                    
-                    powerup.style.bottom = `${bottom}px`;
-                    powerup.style.left = `${gameContainer.clientWidth}px`;
-                    
-                    // Add pulsing animation except for custom styled powerups
-                    if (type !== 'score-multiplier') {
-                        powerup.style.animation = 'pulse 1.5s infinite';
-                    }
-                    
-                    gameContainer.appendChild(powerup);
-                    powerups.push({
-                        element: powerup,
-                        position: gameContainer.clientWidth,
-                        bottom: bottom,
-                        type: type,
-                        size: powerupSize
-                    });
-                }
-            }
-            
-            function moveBackgroundElements() {
-                for (let i = 0; i < backgroundElements.length; i++) {
-                    backgroundElements[i].position -= backgroundElements[i].speed;
-                    backgroundElements[i].element.style.left = `${backgroundElements[i].position}px`;
-                    
-                    // Reposition background elements that go off-screen
-                    if (backgroundElements[i].position + backgroundElements[i].width < 0) {
-                        if (backgroundElements[i].type === 'cloud') {
-                            backgroundElements[i].position = gameContainer.clientWidth;
-                            backgroundElements[i].element.style.left = `${backgroundElements[i].position}px`;
-                        } else if (backgroundElements[i].type === 'mountain') {
-                            backgroundElements[i].position = gameContainer.clientWidth;
-                            backgroundElements[i].element.style.left = `${backgroundElements[i].position}px`;
-                        }
-                    }
-                }
-            }
-            
-            function moveObstacles() {
-                for (let i = 0; i < obstacles.length; i++) {
-                    obstacles[i].position -= gameSpeed;
-                    obstacles[i].element.style.left = `${obstacles[i].position}px`;
-                    
-                    // Move emitters with the laser
-                    if (obstacles[i].emitters) {
-                        for (let j = 0; j < obstacles[i].emitters.length; j++) {
-                            const emitter = obstacles[i].emitters[j];
-                            if (obstacles[i].type === 'vertical') {
-                                emitter.style.left = `${obstacles[i].position - 6}px`;
-                            } else {
-                                // For horizontal lasers, position emitters at start and end
-                                if (j === 0) {
-                                    emitter.style.left = `${obstacles[i].position - 20}px`;
-                                } else {
-                                    emitter.style.left = `${obstacles[i].position + obstacles[i].width}px`;
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Remove obstacles that have gone off-screen
-                    if (obstacles[i].position + obstacles[i].width < 0) {
-                        if (obstacles[i].element.parentNode === gameContainer) {
-                            gameContainer.removeChild(obstacles[i].element);
-                        }
-                        
-                        // Remove emitters
-                        if (obstacles[i].emitters) {
-                            for (const emitter of obstacles[i].emitters) {
-                                if (emitter.parentNode === gameContainer) {
-                                    gameContainer.removeChild(emitter);
-                                }
-                            }
-                        }
-                        
-                        obstacles.splice(i, 1);
-                        i--;
-                    }
-                }
-            }
-            
-            function moveCoins() {
-                // Basic coin movement
-                for (let i = 0; i < coins.length; i++) {
-                    coins[i].position -= gameSpeed;
-                    
-                    // Simplified magnet effect - only apply if within a range
-                    if (hasCoinMagnet && coins[i].position > 0 && coins[i].position < gameContainer.clientWidth) {
-                        // Only process every few frames to avoid performance issues
-                        if (magnetTickCounter % 3 === 0) {
-                            // Simplified magnet effect
-                            const playerCenterX = playerStartX + playerWidth / 2;
-                            const playerCenterY = playerY + playerHeight / 2;
-                            const coinCenterX = coins[i].position + coins[i].size / 2;
-                            const coinCenterY = coins[i].bottom + coins[i].size / 2;
-                            
-                            // Calculate distance
-                            const dx = playerCenterX - coinCenterX;
-                            const dy = playerCenterY - coinCenterY;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            
-                            // If within magnet range and in front of player
-                            if (distance < 100 && coins[i].position < playerStartX + playerWidth) {
-                                // Move directly toward player at a fixed rate
-                                const moveSpeed = 3;
-                                const angle = Math.atan2(dy, dx);
-                                coins[i].position += Math.cos(angle) * moveSpeed;
-                                coins[i].bottom += Math.sin(angle) * moveSpeed;
-                                coins[i].element.style.bottom = `${coins[i].bottom}px`;
-                            }
-                        }
-                    }
-                    
-                    coins[i].element.style.left = `${coins[i].position}px`;
-                    
-                    // Remove coins that have gone off-screen
-                    if (coins[i].position < -50) {
-                        if (coins[i].element.parentNode === gameContainer) {
-                            gameContainer.removeChild(coins[i].element);
-                        }
-                        coins.splice(i, 1);
-                        i--;
-                    }
-                }
-                
-                magnetTickCounter++;
-            }
+<div id="pause" class="screen hidden">
+  <div class="panel">
+    <h2>PAUSED</h2>
+    <button class="btn big" id="resumeBtn">RESUME</button><br>
+    <button class="btn" id="quitBtn" style="margin-top:14px">QUIT TO MENU</button>
+    <div class="note" style="color:#c9b6ff">QUITTING KEEPS THE COINS YOU GRABBED.</div>
+  </div>
+</div>
 
-            
-            function movePowerups() {
-                for (let i = 0; i < powerups.length; i++) {
-                    powerups[i].position -= gameSpeed;
-                    powerups[i].element.style.left = `${powerups[i].position}px`;
-                    
-                    // Remove powerups that have gone off-screen
-                    if (powerups[i].position < 0) {
-                        if (powerups[i].element.parentNode === gameContainer) {
-                            gameContainer.removeChild(powerups[i].element);
-                        }
-                        powerups.splice(i, 1);
-                        i--;
-                    }
-                }
-            }
-            
-            function checkCollisions() {
-                const playerLeft = playerStartX;
-                const playerRight = playerLeft + playerWidth;
-                const playerTop = gameContainer.clientHeight - playerY - playerHeight;
-                const playerBottom = gameContainer.clientHeight - playerY;
-                
-                // Check obstacle collisions
-                for (let i = 0; i < obstacles.length; i++) {
-                    const obsLeft = obstacles[i].position;
-                    const obsRight = obsLeft + obstacles[i].width;
-                    const obsTop = gameContainer.clientHeight - obstacles[i].bottom - obstacles[i].height;
-                    const obsBottom = gameContainer.clientHeight - obstacles[i].bottom;
-                    
-                    if (playerRight > obsLeft && playerLeft < obsRight &&
-                        playerBottom > obsTop && playerTop < obsBottom) {
-                        
-                        if (isInvincible) {
-                            // Invincibility destroys obstacle
-                            createInvincibilityEffect(obsLeft, obstacles[i].bottom + obstacles[i].height / 2);
-                            
-                            // Remove the obstacle
-                            if (obstacles[i].element.parentNode === gameContainer) {
-                                gameContainer.removeChild(obstacles[i].element);
-                            }
-                            
-                            // Remove emitters
-                            if (obstacles[i].emitters) {
-                                for (const emitter of obstacles[i].emitters) {
-                                    if (emitter.parentNode === gameContainer) {
-                                        gameContainer.removeChild(emitter);
-                                    }
-                                }
-                            }
-                            
-                            obstacles.splice(i, 1);
-                            i--;
-                        } else if (hasShield) {
-                            // Shield protects from one collision
-                            hasShield = false;
-                            shieldTimeLeft = 0;
-                            updatePowerupIndicator();
-                            
-                            // Create shield break effect
-                            createShieldBreakEffect();
-                            
-                            // Remove the obstacle
-                            if (obstacles[i].element.parentNode === gameContainer) {
-                                gameContainer.removeChild(obstacles[i].element);
-                            }
-                            
-                            // Remove emitters
-                            if (obstacles[i].emitters) {
-                                for (const emitter of obstacles[i].emitters) {
-                                    if (emitter.parentNode === gameContainer) {
-                                        gameContainer.removeChild(emitter);
-                                    }
-                                }
-                            }
-                            
-                            obstacles.splice(i, 1);
-                            i--;
-                        } else if (invincibilityGracePeriod > 0) {
-                            // Grace period after invincibility also prevents death
-                            createInvincibilityEffect(obsLeft, obstacles[i].bottom + obstacles[i].height / 2);
-                            
-                            // Remove the obstacle
-                            if (obstacles[i].element.parentNode === gameContainer) {
-                                gameContainer.removeChild(obstacles[i].element);
-                            }
-                            
-                            // Remove emitters
-                            if (obstacles[i].emitters) {
-                                for (const emitter of obstacles[i].emitters) {
-                                    if (emitter.parentNode === gameContainer) {
-                                        gameContainer.removeChild(emitter);
-                                    }
-                                }
-                            }
-                            
-                            obstacles.splice(i, 1);
-                            i--;
-                        } else {
-                            endGame();
-                            return;
-                        }
-                    }
-                }
-                
-                // Check coin collisions
-                for (let i = 0; i < coins.length; i++) {
-                    const coinLeft = coins[i].position;
-                    const coinSize = coins[i].size || 20;
-                    const coinRight = coinLeft + coinSize;
-                    const coinTop = gameContainer.clientHeight - coins[i].bottom - coinSize;
-                    const coinBottom = gameContainer.clientHeight - coins[i].bottom;
-                    
-                    if (playerRight > coinLeft && playerLeft < coinRight &&
-                        playerBottom > coinTop && playerTop < coinBottom) {
-                        
-                        // Check if it's a magnet coin
-                        if (coins[i].isMagnetCoin) {
-                            // Activate coin magnet powerup
-                            hasCoinMagnet = true;
-                            coinMagnetTimeLeft = 10 * 60; // 10 seconds
-                            player.classList.add('magnet-glow');
-                            createPowerupCollectEffect('magnet', coins[i].position, coins[i].bottom);
-                        }
-                        
-                        // Collect coin with effect
-                        const pointsEarned = 10 * scoreMultiplier;
-                        createCoinCollectEffect(coins[i].position, coins[i].bottom, pointsEarned);
-                        
-                        if (coins[i].element.parentNode === gameContainer) {
-                            gameContainer.removeChild(coins[i].element);
-                        }
-                        coins.splice(i, 1);
-                        score += pointsEarned;
-                        scoreDisplay.textContent = `Score: ${score}`;
-                        i--;
-                    }
-                }
-                
-                // Check powerup collisions
-                for (let i = 0; i < powerups.length; i++) {
-                    const powerupLeft = powerups[i].position;
-                    const powerupSize = powerups[i].size || 30;
-                    const powerupRight = powerupLeft + powerupSize;
-                    const powerupTop = gameContainer.clientHeight - powerups[i].bottom - powerupSize;
-                    const powerupBottom = gameContainer.clientHeight - powerups[i].bottom;
-                    
-                    if (playerRight > powerupLeft && playerLeft < powerupRight &&
-                        playerBottom > powerupTop && playerTop < powerupBottom) {
-                        
-                        // Apply powerup with effect
-                        const type = powerups[i].type;
-                        createPowerupCollectEffect(type, powerups[i].position, powerups[i].bottom);
-                        
-                        if (type === 'invincibility') {
-                            isInvincible = true;
-                            invincibilityTimeLeft = 5 * 60; // 5 seconds at 60fps
-                            invincibilityGracePeriod = 2 * 60; // 2 additional seconds of grace
-                        } else if (type === 'shield') {
-                            hasShield = true;
-                            shieldTimeLeft = 10 * 60; // 10 seconds at 60fps
-                        } else if (type === 'magnet') {
-                            hasCoinMagnet = true;
-                            coinMagnetTimeLeft = 15 * 60; // 15 seconds
-                            player.classList.add('magnet-glow');
-                        } else if (type === 'time-slow') {
-                            hasTimeSlow = true;
-                            timeSlowTimeLeft = 8 * 60; // 8 seconds
-                            gameSpeed = originalGameSpeed * 0.6; // Slow by 40%
-                            timeSlowOverlay.style.display = 'block';
-                        } else if (type === 'score-multiplier') {
-                            hasScoreMultiplier = true;
-                            scoreMultiplier = 2;
-                            scoreMultiplierTimeLeft = 15 * 60; // 15 seconds
-                            multiplierDisplay.style.display = 'block';
-                        }
-                        
-                        if (powerups[i].element.parentNode === gameContainer) {
-                            gameContainer.removeChild(powerups[i].element);
-                        }
-                        powerups.splice(i, 1);
-                        updatePowerupIndicator();
-                        i--;
-                    }
-                }
-            }
-            
-            function createCoinCollectEffect(x, y, points) {
-                const effect = document.createElement('div');
-                effect.className = 'effect';
-                effect.textContent = `+${points}`;
-                effect.style.position = 'absolute';
-                effect.style.left = `${x}px`;
-                effect.style.bottom = `${y}px`;
-                effect.style.color = scoreMultiplier > 1 ? '#2ECC71' : 'gold';
-                effect.style.fontSize = 'calc(18px + 0.6vmin)';
-                effect.style.fontWeight = 'bold';
-                effect.style.textShadow = '0 0 5px black';
-                effect.style.animation = 'float-up 1s forwards';
-                effect.style.pointerEvents = 'none';
-                effect.style.zIndex = '150';
-                
-                gameContainer.appendChild(effect);
-                
-                setTimeout(() => {
-                    if (effect.parentNode === gameContainer) {
-                        gameContainer.removeChild(effect);
-                    }
-                }, 1000);
-            }
-            
-            function createPowerupCollectEffect(type, x, y) {
-                const effect = document.createElement('div');
-                effect.className = 'effect';
-                
-                // Set text and color based on powerup type
-                if (type === 'invincibility') {
-                    effect.textContent = 'Invincibility!';
-                    effect.style.color = '#FF9500';
-                } else if (type === 'shield') {
-                    effect.textContent = 'Shield!';
-                    effect.style.color = '#3498DB';
-                } else if (type === 'magnet') {
-                    effect.textContent = 'Coin Magnet!';
-                    effect.style.color = '#E74C3C';
-                } else if (type === 'time-slow') {
-                    effect.textContent = 'Time Slow!';
-                    effect.style.color = '#9B59B6';
-                } else if (type === 'score-multiplier') {
-                    effect.textContent = '2x Score!';
-                    effect.style.color = '#2ECC71';
-                }
-                
-                effect.style.position = 'absolute';
-                effect.style.left = `${x}px`;
-                effect.style.bottom = `${y}px`;
-                effect.style.fontSize = 'calc(18px + 0.6vmin)';
-                effect.style.fontWeight = 'bold';
-                effect.style.textShadow = '0 0 5px black';
-                effect.style.animation = 'float-up 1s forwards';
-                effect.style.pointerEvents = 'none';
-                effect.style.zIndex = '150';
-                
-                gameContainer.appendChild(effect);
-                
-                setTimeout(() => {
-                    if (effect.parentNode === gameContainer) {
-                        gameContainer.removeChild(effect);
-                    }
-                }, 1000);
-            }
-            
-            function createShieldBreakEffect() {
-                // Add shield break animation around player
-                const effect = document.createElement('div');
-                effect.className = 'effect';
-                effect.style.position = 'absolute';
-                effect.style.width = '12vmin';
-                effect.style.height = '12vmin';
-                effect.style.left = `${playerStartX - 2.5 * vmin}px`;
-                effect.style.bottom = `${playerY - vmin}px`;
-                effect.style.borderRadius = '50%';
-                effect.style.border = '3px solid #3498DB';
-                effect.style.animation = 'shield-break 0.5s forwards';
-                effect.style.pointerEvents = 'none';
-                effect.style.zIndex = '150';
-                
-                gameContainer.appendChild(effect);
-                
-                setTimeout(() => {
-                    if (effect.parentNode === gameContainer) {
-                        gameContainer.removeChild(effect);
-                    }
-                }, 500);
-            }
-            
-            function createInvincibilityEffect(x, y) {
-                // Add explosion effect when invincible player hits obstacle
-                const effect = document.createElement('div');
-                effect.className = 'effect';
-                effect.style.position = 'absolute';
-                effect.style.width = '10vmin';
-                effect.style.height = '10vmin';
-                effect.style.left = `${x - 5 * vmin}px`;
-                effect.style.bottom = `${y - 5 * vmin}px`;
-                effect.style.borderRadius = '50%';
-                effect.style.background = 'radial-gradient(circle, #FF9500, #FF5733)';
-                effect.style.animation = 'explosion 0.5s forwards';
-                effect.style.pointerEvents = 'none';
-                effect.style.zIndex = '150';
-                
-                gameContainer.appendChild(effect);
-                
-                setTimeout(() => {
-                    if (effect.parentNode === gameContainer) {
-                        gameContainer.removeChild(effect);
-                    }
-                }, 500);
-            }
-            
-            function updatePowerupStatus() {
-                // Update invincibility
-                if (invincibilityTimeLeft > 0) {
-                    invincibilityTimeLeft--;
-                    if (invincibilityTimeLeft === 0) {
-                        isInvincible = false;
-                    }
-                }
-                
-                // Update invincibility grace period
-                if (invincibilityGracePeriod > 0 && invincibilityTimeLeft === 0) {
-                    invincibilityGracePeriod--;
-                }
-                
-                // Update shield
-                if (shieldTimeLeft > 0) {
-                    shieldTimeLeft--;
-                    if (shieldTimeLeft === 0) {
-                        hasShield = false;
-                    }
-                }
-                
-                // Update coin magnet
-                if (coinMagnetTimeLeft > 0) {
-                    coinMagnetTimeLeft--;
-                    if (coinMagnetTimeLeft === 0) {
-                        hasCoinMagnet = false;
-                        player.classList.remove('magnet-glow');
-                    }
-                }
-                
-                // Update time slow
-                if (timeSlowTimeLeft > 0) {
-                    timeSlowTimeLeft--;
-                    if (timeSlowTimeLeft === 0) {
-                        hasTimeSlow = false;
-                        gameSpeed = originalGameSpeed;
-                        timeSlowOverlay.style.display = 'none';
-                    }
-                }
-                
-                // Update score multiplier
-                if (scoreMultiplierTimeLeft > 0) {
-                    scoreMultiplierTimeLeft--;
-                    if (scoreMultiplierTimeLeft === 0) {
-                        hasScoreMultiplier = false;
-                        scoreMultiplier = 1;
-                        multiplierDisplay.style.display = 'none';
-                    }
-                }
-                
-                updatePowerupIndicator();
-                
-                // Visual indicators for powerups
-                if (isInvincible) {
-                    player.style.boxShadow = '0 0 15px 10px #FF9500';
-                } else if (invincibilityGracePeriod > 0) {
-                    // Fading effect during grace period
-                    const opacity = invincibilityGracePeriod / (2 * 60);
-                    player.style.boxShadow = `0 0 15px 10px rgba(255, 149, 0, ${opacity})`;
-                } else if (hasShield) {
-                    player.style.boxShadow = '0 0 10px 5px #3498DB';
-                } else if (!hasCoinMagnet) {
-                    player.style.boxShadow = 'none';
-                }
-            }
-            
-            function updatePowerupIndicator() {
-                let indicatorText = '';
-                
-                if (isInvincible) {
-                    indicatorText += `Invincibility: ${Math.ceil(invincibilityTimeLeft / 60)}s `;
-                } else if (invincibilityGracePeriod > 0) {
-                    indicatorText += `Grace Period: ${Math.ceil(invincibilityGracePeriod / 60)}s `;
-                }
-                
-                if (hasShield) {
-                    indicatorText += `Shield: ${Math.ceil(shieldTimeLeft / 60)}s `;
-                }
-                
-                if (hasCoinMagnet) {
-                    indicatorText += `Coin Magnet: ${Math.ceil(coinMagnetTimeLeft / 60)}s `;
-                }
-                
-                if (hasTimeSlow) {
-                    indicatorText += `Time Slow: ${Math.ceil(timeSlowTimeLeft / 60)}s `;
-                }
-                
-                if (hasScoreMultiplier) {
-                    indicatorText += `2x Score: ${Math.ceil(scoreMultiplierTimeLeft / 60)}s`;
-                }
-                
-                powerupIndicator.textContent = indicatorText;
-            }
-            
-            function updateScore() {
-                score += scoreMultiplier;
-                distanceTraveled += gameSpeed;
-                
-                // Periodically save game progress
-                if (score % 300 === 0) { // Save every ~5 seconds
-                    saveGameState();
-                }
-                
-                updateProgress();
-                
-                // Check for level completion
-                if (distanceTraveled >= levelTarget) {
-                    completeLevel();
-                }
-                
-                scoreDisplay.textContent = `Score: ${score}`;
-            }
-            
-            function updateProgress() {
-                const progressPercentage = Math.min(100, (distanceTraveled / levelTarget) * 100);
-                progressBar.style.width = `${progressPercentage}%`;
-            }
-            
-            function completeLevel() {
-                // Mark level as completed
-                if (!completedLevels.includes(currentLevel - 1)) {
-                    completedLevels.push(currentLevel - 1);
-                    localStorage.setItem('completedLevels', JSON.stringify(completedLevels));
-                }
-                
-                // Pause the game
-                levelPaused = true;
-                
-                // Cancel the animation frame to truly pause the game
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-                
-                // Update level complete message
-                completedLevelSpan.textContent = currentLevel;
-                nextLevelSpan.textContent = currentLevel + 1;
-                
-                // Show "all levels complete" message if it's the last level
-                if (currentLevel === levels.length) {
-                    levelCompleteMessage.querySelector('h2').textContent = "Congratulations!";
-                    levelCompleteMessage.querySelector('p').textContent = "You've completed all levels!";
-                    continueBtn.style.display = 'none';
-                } else {
-                    // Reset normal level complete message
-                    levelCompleteMessage.querySelector('h2').textContent = "Level Complete!";
-                    levelCompleteMessage.querySelector('p').textContent = `You completed Level ${currentLevel}!`;
-                    nextLevelSpan.textContent = currentLevel + 1;
-                    continueBtn.style.display = 'inline-block';
-                }
-                
-                // Show level complete screen
-                levelCompleteMessage.style.display = 'block';
-            }
-            
-            function endGame() {
-                gameOver = true;
-                gameActive = false;
-                finalScoreDisplay.textContent = `Your Score: ${score}`;
-                
-                // Check for high score
-                if (score > highScore) {
-                    highScore = score;
-                    localStorage.setItem('highScore', highScore);
-                    highScoreDisplay.textContent = `High Score: ${highScore}`;
-                    newHighScoreText.style.display = 'block';
-                } else {
-                    newHighScoreText.style.display = 'none';
-                }
-                
-                gameOverScreen.style.display = 'block';
-                
-                // Clean up event listeners
-                removeGameControls();
-                
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-            }
-            
-            function resetGameState() {
-                // Clear all elements
-                while (obstacles.length > 0) {
-                    if (obstacles[0].element.parentNode === gameContainer) {
-                        gameContainer.removeChild(obstacles[0].element);
-                    }
-                    
-                    // Remove emitters
-                    if (obstacles[0].emitters) {
-                        for (const emitter of obstacles[0].emitters) {
-                            if (emitter.parentNode === gameContainer) {
-                                gameContainer.removeChild(emitter);
-                            }
-                        }
-                    }
-                    
-                    obstacles.shift();
-                }
-                
-                while (coins.length > 0) {
-                    if (coins[0].element.parentNode === gameContainer) {
-                        gameContainer.removeChild(coins[0].element);
-                    }
-                    coins.shift();
-                }
-                
-                while (powerups.length > 0) {
-                    if (powerups[0].element.parentNode === gameContainer) {
-                        gameContainer.removeChild(powerups[0].element);
-                    }
-                    powerups.shift();
-                }
-                
-                while (backgroundElements.length > 0) {
-                    if (backgroundElements[0].element.parentNode === gameContainer) {
-                        gameContainer.removeChild(backgroundElements[0].element);
-                    }
-                    backgroundElements.shift();
-                }
-                
-                // Remove any lingering effects
-                const effects = document.querySelectorAll('.effect');
-                for (const effect of effects) {
-                    if (effect.parentNode === gameContainer) {
-                        gameContainer.removeChild(effect);
-                    }
-                }
-                
-                // Reset game state
-                isJetpackActive = false;
-                playerY = gameContainer.clientHeight / 2;
-                playerVelocity = 0;
-                gameSpeed = 5;
-                baseGameSpeed = 5;
-                originalGameSpeed = 5;
-                score = 0;
-                scoreMultiplier = 1;
-                distanceTraveled = 0;
-                hasShield = false;
-                shieldTimeLeft = 0;
-                isInvincible = false;
-                invincibilityTimeLeft = 0;
-                invincibilityGracePeriod = 0;
-                hasCoinMagnet = false;
-                coinMagnetTimeLeft = 0;
-                hasTimeSlow = false;
-                timeSlowTimeLeft = 0;
-                hasScoreMultiplier = false;
-                scoreMultiplierTimeLeft = 0;
-                magnetTickCounter = 0;
-                
-                // Reset visual effects
-                player.style.boxShadow = 'none';
-                player.classList.remove('magnet-glow');
-                timeSlowOverlay.style.display = 'none';
-                multiplierDisplay.style.display = 'none';
-                
-                // Reset game container color
-                gameContainer.style.backgroundColor = '#87CEEB';
-                
-                // Reset UI
-                scoreDisplay.textContent = 'Score: 0';
-                powerupIndicator.textContent = '';
-                levelCompleteMessage.style.display = 'none';
-                gameOverScreen.style.display = 'none';
-                jetpackFlame.style.opacity = '0';
-                
-                // Reset progress bar
-                progressBar.style.width = '0%';
-                
-                // Reset player position and rotation
-                player.style.bottom = `${groundHeight + 10}px`;
-                player.style.transform = 'rotate(0deg)';
-                document.querySelector('.player-arm.left').style.transform = 'rotate(0deg)';
-                document.querySelector('.player-arm.right').style.transform = 'rotate(0deg)';
-                
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-            }
-            
-            function restartGame() {
-                resetGameState();
-                gameOver = false;
-                gameActive = true;
-                levelPaused = false;
-                
-                // Start from the same level player died at, not level 1
-                if (localStorage.getItem('currentLevel')) {
-                    currentLevel = parseInt(localStorage.getItem('currentLevel'));
-                } else {
-                    currentLevel = 1;
-                }
-                
-                // Get the level data
-                const levelIndex = currentLevel - 1;
-                levelTarget = levels[levelIndex].distance;
-                obstacleFrequency = levels[levelIndex].obstacleFrequency;
-                baseGameSpeed = levels[levelIndex].obstacleSpeed;
-                gameSpeed = baseGameSpeed;
-                originalGameSpeed = baseGameSpeed;
-                
-                // Set background color
-                gameContainer.style.backgroundColor = levels[levelIndex].background;
-                
-                // Save current level
-                localStorage.setItem('currentLevel', currentLevel);
-                localStorage.setItem('hasSavedGame', 'true');
-                
-                // Update level indicator
-                levelIndicator.textContent = `Level: ${currentLevel}`;
-                
-                // Generate background elements
-                generateBackgroundElements(levelIndex);
-                
-                addGameControls();
-                gameLoop();
-            }
-            
-            function gameLoop() {
-                if (gameActive && !gameOver && !levelPaused) {
-                    updatePlayerPosition();
-                    createObstacle();
-                    createCoin();
-                    createPowerup();
-                    moveBackgroundElements();
-                    moveObstacles();
-                    moveCoins();
-                    movePowerups();
-                    checkCollisions();
-                    updatePowerupStatus();
-                    updateScore();
-                    
-                    animationFrameId = requestAnimationFrame(gameLoop);
-                }
-            }
-            
-            // Get viewport unit equivalents for calculations
-            const vh = window.innerHeight / 100;
-            const vw = window.innerWidth / 100;
-            const vmin = Math.min(vh, vw);
-            
-            // Generate initial level buttons
-            generateLevelButtons();
-            
-            // Apply fixed positioning for mobile
-            if (isMobile) {
-                document.body.style.position = 'fixed';
-                document.body.style.overflow = 'hidden';
-                
-                // Add debug logging for level complete popup
-                continueBtn.addEventListener('touchstart', function(e) {
-                    console.log("Continue button touchstart");
-                });
-                
-                // Force mobile button heights to be large enough for tapping
-                const buttons = document.querySelectorAll('.btn');
-                buttons.forEach(btn => {
-                    btn.style.minHeight = '44px';
-                });
-                
-                // Prevent double-tap zoom
-                document.addEventListener('dblclick', function(e) {
-                    e.preventDefault();
-                }, { passive: false });
-            }
-            
-            // Handle mobile-specific touch events
-            if (isMobile) {
-                // Prevent scrolling
-                document.addEventListener('touchmove', function(e) {
-                    if (e.touches.length > 1) {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-                
-                // Prevent zooming
-                document.addEventListener('gesturestart', function(e) {
-                    e.preventDefault();
-                });
-            }
-        });
-    </script>
+<div id="over" class="screen hidden">
+  <div class="panel">
+    <h2 id="overTitle">WIPED OUT</h2>
+    <div class="stats" id="overStats"></div>
+    <div class="row"><button class="btn big" id="retryBtn">RETRY</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="overMenu">MENU</button><button class="btn" id="overShop">SHOP</button></div>
+  </div>
+</div>
+
+<div id="done" class="screen hidden">
+  <div class="panel">
+    <h2 id="doneTitle">LEVEL CLEAR</h2>
+    <div class="stats" id="doneStats"></div>
+    <div class="row"><button class="btn big" id="nextBtn">NEXT LEVEL</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="doneMenu">MENU</button><button class="btn" id="doneShop">SHOP</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+   BASICS
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const cv = $('c');
+const ctx = cv.getContext('2d');
+const TAU = Math.PI * 2;
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[Math.random() * arr.length | 0];
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+function setText(el, v) { v = String(v); if (el._v !== v) { el._v = v; el.innerHTML = v; } }
+
+/* =========================================================
+   SAVE  (everything lives under jp_ so other arcade games
+   on the same domain can never clobber it)
+   ========================================================= */
+const SAVE_KEY = 'jp_save';
+const OLD_KEYS = ['highScore', 'completedLevels', 'jetpackGameState'];
+function defaultSave() {
+  return { v: 2, unlocked: 1, coins: 0, highScore: 0, levelBest: {}, levelDist: {}, endlessBest: 0,
+    upg: { dur: 0, mag: 0, val: 0, shield: 0 }, muted: false };
+}
+let migratedFromOld = false;
+function loadSave() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { s = null; }
+  if (!s || typeof s !== 'object') {
+    s = defaultSave();
+    // one-time migration from the v1 generic keys
+    try {
+      const hadOld = OLD_KEYS.some(k => localStorage.getItem(k) !== null);
+      if (hadOld) {
+        let done = [];
+        try { const d = JSON.parse(localStorage.getItem('completedLevels')); if (Array.isArray(d)) done = d; } catch (e) {}
+        let st = null;
+        try { st = JSON.parse(localStorage.getItem('jetpackGameState')); } catch (e) {}
+        let high = parseInt(localStorage.getItem('highScore'), 10) || 0;
+        let curLvl = 1;
+        if (st && typeof st === 'object') {
+          if (Array.isArray(st.completedLevels)) done = done.concat(st.completedLevels);
+          high = Math.max(high, parseInt(st.highScore, 10) || 0);
+          curLvl = parseInt(st.currentLevel, 10) || 1;
+        }
+        const maxDone = done.map(Number).filter(n => n >= 1 && n <= 10).reduce((a, b) => Math.max(a, b), 0);
+        s.highScore = Math.max(0, high);
+        s.unlocked = clamp(Math.max(1, maxDone + 1, curLvl), 1, 11);
+        migratedFromOld = true;
+      }
+      OLD_KEYS.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+  }
+  const d = defaultSave();
+  const merged = Object.assign(d, s);
+  merged.upg = Object.assign(defaultSave().upg, (s && s.upg) || {});
+  merged.levelBest = merged.levelBest || {};
+  merged.levelDist = merged.levelDist || {};
+  merged.unlocked = clamp(parseInt(merged.unlocked, 10) || 1, 1, 11);
+  return merged;
+}
+const save = loadSave();
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+persist();
+
+/* =========================================================
+   LEVELS / THEMES
+   ========================================================= */
+const THEMES = [
+  { name: 'LAUNCH BAY',   sky: ['#0b1a3a', '#1d3b6e'], accent: '#4dd9ff', ground: '#1a2238' },
+  { name: 'NEON ALLEY',   sky: ['#1a0526', '#4a0f5c'], accent: '#ff2e88', ground: '#220a2e' },
+  { name: 'TOXIC PLANT',  sky: ['#06200f', '#14502a'], accent: '#39ff14', ground: '#0c2414' },
+  { name: 'SUNSET RUN',   sky: ['#3a0d1d', '#ff7a3d'], accent: '#ffe14d', ground: '#2a0f14' },
+  { name: 'ICE LAB',      sky: ['#0a2633', '#3fa3c4'], accent: '#bff4ff', ground: '#10303d' },
+  { name: 'MAGMA CORE',   sky: ['#2a0500', '#8a1d00'], accent: '#ff8a1f', ground: '#1e0700' },
+  { name: 'DEEP SPACE',   sky: ['#000005', '#14123a'], accent: '#b44dff', ground: '#0b0a20' },
+  { name: 'CIRCUIT CITY', sky: ['#001a14', '#004d3a'], accent: '#00ffa8', ground: '#00140f' },
+  { name: 'STORM TOWER',  sky: ['#101418', '#3a4654'], accent: '#e6f0ff', ground: '#14181e' },
+  { name: 'FINAL ASCENT', sky: ['#1a0000', '#4d001a'], accent: '#ff3b3b', ground: '#140006' }
+];
+const ENDLESS = 11;
+function levelCfg(n) {
+  if (n === ENDLESS) {
+    return { length: Infinity, speed: 330, gap: 400, diag: true, missiles: true, moving: true, rotating: true, mMin: 4, mMax: 7 };
+  }
+  const i = n - 1;
+  return {
+    length: 700 + i * 200,                       // meters
+    speed: 300 + i * 22,                         // px/s
+    gap: Math.max(310, 560 - i * 26),            // px between obstacles
+    diag: n >= 2, missiles: n >= 3, moving: n >= 5, rotating: n >= 7,
+    mMin: Math.max(2.5, 7 - i * 0.6), mMax: Math.max(4.5, 11 - i * 0.8)
+  };
+}
+
+const UPGS = [
+  { id: 'dur',    name: 'POWERUP DURATION', desc: '+1 second on every powerup.',       max: 5, costs: [60, 140, 260, 420, 650] },
+  { id: 'mag',    name: 'COIN PULL',        desc: 'Always-on mini magnet for coins.',  max: 3, costs: [90, 220, 480] },
+  { id: 'val',    name: 'COIN VALUE',       desc: '+1 coin for every coin you grab.',   max: 3, costs: [150, 400, 900] },
+  { id: 'shield', name: 'STARTER SHIELD',   desc: 'Start every run with a shield.',     max: 1, costs: [500] }
+];
+const PUPS = {
+  magnet: { c: '#ff4d6d', l: 'M',  name: 'MAGNET' },
+  shield: { c: '#7df9ff', l: 'S',  name: 'SHIELD' },
+  slowmo: { c: '#b44dff', l: 'T',  name: 'SLOW-MO' },
+  x2:     { c: '#39ff14', l: '2X', name: '2X' }
+};
+
+/* =========================================================
+   VIEW  (logical height is always 540; width follows aspect)
+   ========================================================= */
+const H = 540, TOP = 40, BOT = H - 60;
+let W = 960, scale = 1, offY = 0, PX = 200;
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(window.innerWidth * dpr);
+  cv.height = Math.round(window.innerHeight * dpr);
+  scale = cv.height / H; W = cv.width / scale; offY = 0;
+  if (W < 640) { scale = cv.width / 640; W = 640; offY = (cv.height - H * scale) / 2; }
+  else if (W > 1500) { W = 1500; scale = cv.width / 1500; offY = (cv.height - H * scale) / 2; }
+  PX = Math.max(130, W * 0.2);
+}
+window.addEventListener('resize', resize);
+
+/* background bits */
+const stars = Array.from({ length: 70 }, () => ({ x: Math.random(), y: rand(TOP + 5, BOT - 120), d: rand(0.02, 0.08), s: Math.random() < 0.2 ? 2 : 1 }));
+const SKY_W = 1600;
+const blds = [];
+{ let x = 0; while (x < SKY_W) { const w = rand(40, 110), h = rand(40, 170); blds.push({ x, w, h, win: Math.random() < 0.6 }); x += w + rand(4, 14); } }
+
+/* =========================================================
+   AUDIO
+   ========================================================= */
+let AC = null, master = null, nbuf = null, thrG = null, thrOn = false;
+function audio() {
+  if (!AC) {
+    try {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      master = AC.createGain(); master.gain.value = save.muted ? 0 : 0.4; master.connect(AC.destination);
+      nbuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
+      const d = nbuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = AC.createBufferSource(); src.buffer = nbuf; src.loop = true;
+      const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 0.8;
+      thrG = AC.createGain(); thrG.gain.value = 0;
+      src.connect(bp); bp.connect(thrG); thrG.connect(master); src.start();
+    } catch (e) { AC = null; }
+  }
+  if (AC && AC.state === 'suspended') AC.resume();
+}
+function setThrust(on) {
+  if (!AC || on === thrOn) return;
+  thrOn = on; thrG.gain.setTargetAtTime(on ? 0.16 : 0, AC.currentTime, 0.04);
+}
+function tone(f0, f1, dur, type = 'square', vol = 0.15, delay = 0) {
+  if (!AC) return;
+  const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t);
+  if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+}
+function noise(dur, vol, freq = 2000, delay = 0) {
+  if (!AC) return;
+  const t = AC.currentTime + delay, s = AC.createBufferSource(); s.buffer = nbuf;
+  const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = freq;
+  const g = AC.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+}
+const SFX = {
+  coin()   { tone(1320, 1320, 0.05, 'square', 0.05); tone(1760, 1760, 0.07, 'square', 0.05, 0.04); },
+  pup()    { [0, 0.07, 0.14].forEach((d, i) => tone(523 * (i + 2) / 2, 523 * (i + 2) / 2, 0.09, 'triangle', 0.14, d)); },
+  boom()   { noise(0.5, 0.7, 1200); tone(220, 40, 0.5, 'sawtooth', 0.2); },
+  shield() { tone(900, 200, 0.25, 'triangle', 0.2); noise(0.15, 0.25, 3000); },
+  warn()   { tone(880, 880, 0.05, 'square', 0.05); },
+  launch() { noise(0.25, 0.35, 2600); tone(400, 120, 0.25, 'sawtooth', 0.08); },
+  clear()  { [0, 0.1, 0.2, 0.32].forEach((d, i) => tone(523 * Math.pow(1.26, i), 523 * Math.pow(1.26, i), 0.14, 'square', 0.1, d)); },
+  click()  { tone(600, 900, 0.04, 'square', 0.05); }
+};
+function applyMute() {
+  if (master) master.gain.value = save.muted ? 0 : 0.4;
+  setText($('muteBtn'), save.muted ? 'SOUND OFF' : 'SOUND ON');
+}
+
+/* =========================================================
+   GAME STATE
+   ========================================================= */
+let state = 'menu';             // menu | shop | play | pause | dead | over | done
+let cfg = levelCfg(1), run = null;
+const p = { y: 300, vy: 0, inv: 0, shield: false };
+let obstacles = [], coins = [], pups = [], missiles = [], warns = [], parts = [];
+let pupT = { magnet: 0, slowmo: 0, x2: 0 };
+let T = 0, deadT = 0, shakeT = 0, attractDist = 0, warnBeep = 0, flameT = 0;
+let god = false, timeScale = 1, frozen = false;
+const pointers = new Set();
+const input = { key: false, force: false, get down() { return this.key || this.force || pointers.size > 0; } };
+
+const G = 1500, THRUST = 2700, VMAX = 620, PR = 13, PH = 40;
+
+function curTheme() {
+  if (run && run.endless) return THEMES[Math.floor(run.dist / 8000) % THEMES.length];
+  if (run) return THEMES[run.n - 1];
+  return THEMES[Math.floor(attractDist / 6000) % THEMES.length];
+}
+
+/* =========================================================
+   SPAWNING
+   ========================================================= */
+function spawnObstacle() {
+  const top = TOP + 8, bot = BOT - 8, span = bot - top;
+  const types = ['v', 'h'];
+  if (cfg.diag) types.push('d', 'd');
+  if (cfg.rotating) types.push('r');
+  const t = pick(types);
+  let len, ang;
+  if (t === 'v') { len = rand(0.32, 0.5) * span; ang = Math.PI / 2; }
+  else if (t === 'h') { len = rand(110, 200); ang = 0; }
+  else if (t === 'd') { len = rand(0.3, 0.45) * span; ang = pick([1, -1]) * Math.PI / 4; }
+  else { len = rand(0.26, 0.34) * span; ang = rand(0, Math.PI); }
+  const halfH = (t === 'r' ? len / 2 : Math.abs(Math.sin(ang)) * len / 2) + 10;
+  const cy = rand(top + halfH, bot - halfH);
+  let amp = 0;
+  if (cfg.moving && t !== 'r' && Math.random() < 0.4) {
+    amp = Math.min(cy - top - halfH, bot - halfH - cy, 90);
+    if (amp < 25) amp = 0;
+  }
+  obstacles.push({ x: W + 90, cy, baseY: cy, len, ang, spin: t === 'r' ? pick([1, -1]) * rand(1.0, 1.7) : 0,
+    amp, ph: rand(0, TAU), wspd: rand(1.2, 2.0) });
+}
+function segOf(o) {
+  const c = Math.cos(o.ang) * o.len / 2, s = Math.sin(o.ang) * o.len / 2;
+  return [o.x - c, o.cy - s, o.x + c, o.cy + s];
+}
+function distToSeg(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy;
+  let t = l2 ? ((px - x1) * dx + (py - y1) * dy) / l2 : 0;
+  t = clamp(t, 0, 1);
+  const cx = x1 + t * dx, cy = y1 + t * dy;
+  return Math.hypot(px - cx, py - cy);
+}
+function coinClear(x, y) {
+  for (const o of obstacles) {
+    if (o.spin) { if (Math.hypot(x - o.x, y - o.cy) < o.len / 2 + 26) return false; continue; }
+    const s = segOf(o);
+    if (distToSeg(x, y, s[0], s[1], s[2], s[3]) < 26 + (o.amp || 0)) return false;
+  }
+  return true;
+}
+function addCoin(x, y) { if (y > TOP + 14 && y < BOT - 14 && coinClear(x, y)) coins.push({ x, y }); }
+function spawnCoins(cx) {
+  const top = TOP + 30, bot = BOT - 30, r = Math.random();
+  if (r < 0.4) {
+    const y = rand(top, bot), x0 = cx - 80;
+    for (let i = 0; i < 6; i++) addCoin(x0 + i * 32, y);
+  } else if (r < 0.75) {
+    const yc = rand(top + 55, bot - 55), x0 = cx - 91;
+    for (let i = 0; i < 8; i++) addCoin(x0 + i * 26, yc + Math.sin(i / 7 * TAU) * 50);
+  } else {
+    const y0 = rand(top, bot - 56), x0 = cx - 42;
+    for (let c = 0; c < 4; c++) for (let rr = 0; rr < 3; rr++) addCoin(x0 + c * 28, y0 + rr * 28);
+  }
+}
+function spawnPup(cx) {
+  const types = ['magnet', 'slowmo', 'x2'];
+  if (!p.shield) types.push('shield', 'shield');
+  pups.push({ x: cx, y: rand(TOP + 60, BOT - 60), type: pick(types), ph: rand(0, TAU) });
+}
+function burst(x, y, col, n, spd = 260) {
+  for (let i = 0; i < n && parts.length < 450; i++) {
+    const a = rand(0, TAU), s = rand(spd * 0.3, spd);
+    parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(0.35, 0.8), max: 0.8, col, size: rand(2, 4), g: 300 });
+  }
+}
+
+/* =========================================================
+   RUN FLOW
+   ========================================================= */
+function startRun(n) {
+  audio();
+  n = clamp(n, 1, ENDLESS);
+  if (n > save.unlocked) n = Math.min(save.unlocked, 10);
+  cfg = levelCfg(n);
+  run = {
+    n, endless: n === ENDLESS, dist: 0, lengthPx: n === ENDLESS ? Infinity : cfg.length * 10,
+    speed: cfg.speed, gap: cfg.gap, sinceSpawn: cfg.gap - 260,
+    missileT: rand(cfg.mMin, cfg.mMax) + 2, score: 0, coins: 0, wallet: 0,
+    bestAtStart: n === ENDLESS ? save.endlessBest : (save.levelDist[String(n)] || 0)
+  };
+  p.y = BOT - PH / 2; p.vy = 0; p.inv = 0; p.shield = save.upg.shield > 0;
+  obstacles = []; coins = []; pups = []; missiles = []; warns = []; parts = [];
+  pupT = { magnet: 0, slowmo: 0, x2: 0 };
+  spawnCoins(PX + 260);
+  T = 0; shakeT = 0; acc = 0;
+  pointers.clear(); input.key = false;
+  state = 'play';
+  showScreen(null);
+  $('hud').classList.remove('hidden');
+  $('prog').style.display = run.endless ? 'none' : '';
+}
+function hit() {
+  if (god || p.inv > 0 || state !== 'play') return;
+  if (p.shield) {
+    p.shield = false; p.inv = 1.2; shakeT = 0.3;
+    burst(PX, p.y, '#7df9ff', 26); SFX.shield();
+    return;
+  }
+  state = 'dead'; deadT = 1.1; shakeT = 0.45;
+  burst(PX, p.y, '#ffb02e', 40, 380); burst(PX, p.y, '#ff2e88', 20, 300);
+  setThrust(false); SFX.boom();
+  finishRun('dead');
+}
+function finishRun(kind) {
+  const meters = Math.floor(run.dist / 10);
+  let bonus = 0;
+  if (kind === 'done') { bonus = 15 + run.n * 5; save.unlocked = Math.max(save.unlocked, run.n + 1); }
+  run.bonus = bonus;
+  save.coins += run.wallet + bonus;
+  const sc = Math.floor(run.score);
+  run.newHigh = sc > save.highScore;
+  if (run.newHigh) save.highScore = sc;
+  if (run.endless) {
+    run.newBest = meters > save.endlessBest;
+    if (run.newBest) save.endlessBest = meters;
+  } else {
+    const k = String(run.n);
+    const m = Math.min(meters, cfg.length);
+    run.newBest = m > (save.levelDist[k] || 0);
+    if (run.newBest) save.levelDist[k] = m;
+    if (sc > (save.levelBest[k] || 0)) save.levelBest[k] = sc;
+  }
+  persist();
+}
+function levelDone() {
+  state = 'done'; setThrust(false); SFX.clear();
+  finishRun('done');
+  const last = run.n >= 10;
+  setText($('doneTitle'), last ? 'ALL LEVELS CLEAR!' : 'LEVEL ' + run.n + ' CLEAR');
+  setText($('doneStats'),
+    `SCORE <b>${Math.floor(run.score).toLocaleString()}</b>${run.newHigh ? ' <span class="hi">NEW HIGH!</span>' : ''}<br>` +
+    `COINS <b>+${run.wallet}</b> &nbsp; BONUS <b>+${run.bonus}</b><br>` +
+    `WALLET <b>${save.coins.toLocaleString()}</b>` +
+    (last ? '<br><span class="hi">ENDLESS MODE UNLOCKED</span>' : ''));
+  setText($('nextBtn'), last ? 'PLAY ENDLESS' : 'NEXT LEVEL');
+  $('hud').classList.add('hidden');
+  showScreen('done');
+}
+function showOver() {
+  state = 'over';
+  const m = Math.floor(run.dist / 10);
+  const best = run.endless ? save.endlessBest : (save.levelDist[String(run.n)] || 0);
+  setText($('overTitle'), run.endless ? 'RUN OVER' : 'WIPED OUT');
+  setText($('overStats'),
+    `DISTANCE <b>${m}m</b>${run.endless ? '' : ' / ' + cfg.length + 'm'}${run.newBest ? ' <span class="hi">BEST!</span>' : ''}<br>` +
+    `SCORE <b>${Math.floor(run.score).toLocaleString()}</b>${run.newHigh ? ' <span class="hi">NEW HIGH!</span>' : ''}<br>` +
+    `COINS <b>+${run.wallet}</b> &nbsp; WALLET <b>${save.coins.toLocaleString()}</b><br>` +
+    `BEST <b>${best}m</b>`);
+  $('hud').classList.add('hidden');
+  showScreen('over');
+}
+function pauseGame() {
+  if (state !== 'play') return;
+  state = 'pause'; setThrust(false); pointers.clear(); input.key = false;
+  showScreen('pause');
+}
+function resumeGame() {
+  if (state !== 'pause') return;
+  audio(); state = 'play'; acc = 0; last = performance.now();
+  showScreen(null);
+}
+function quitToMenu() {
+  if (run && (state === 'pause' || state === 'play')) finishRun('quit');
+  run = null; state = 'menu'; setThrust(false);
+  $('hud').classList.add('hidden');
+  renderMenu(); showScreen('menu');
+}
+
+/* =========================================================
+   UPDATE  (fixed 120 Hz step -> same speed on every monitor)
+   ========================================================= */
+const STEP = 1 / 120;
+let acc = 0;
+function advance(dt) {
+  if (state === 'play' || state === 'dead') {
+    acc += dt;
+    let n = 0;
+    // stop the moment the run ends (level done / game over) so nothing pays out twice
+    while (acc >= STEP && n < 240 && (state === 'play' || state === 'dead')) { update(STEP); acc -= STEP; n++; }
+    if (n >= 240 || (state !== 'play' && state !== 'dead')) acc = 0;
+  } else {
+    attractDist += dt * 120;
+    T += dt;
+  }
+}
+function update(dt) {
+  if (state !== 'play' && state !== 'dead') return;
+  T += dt;
+  shakeT = Math.max(0, shakeT - dt);
+  updateParticles(dt);
+  if (state === 'dead') {
+    p.vy += G * dt; p.y = Math.min(BOT - 8, p.y + p.vy * dt);
+    deadT -= dt;
+    if (deadT <= 0) showOver();
+    return;
+  }
+
+  const slow = pupT.slowmo > 0 ? 0.55 : 1;
+  if (run.endless) {
+    const m = run.dist / 10;
+    run.speed = 330 + Math.min(320, m * 0.08);
+    run.gap = Math.max(300, 400 - m * 0.02);
+    cfg.mMin = Math.max(2.2, 4 - m * 0.0006); cfg.mMax = Math.max(3.8, 7 - m * 0.001);
+  }
+  const v = run.speed * slow, dx = v * dt;
+  const mult = pupT.x2 > 0 ? 2 : 1;
+  run.dist += dx;
+  run.score += dx / 10 * mult;
+
+  /* player */
+  const thrust = input.down;
+  p.vy += (G - (thrust ? THRUST : 0)) * dt;
+  p.vy = clamp(p.vy, -VMAX, VMAX);
+  p.y += p.vy * dt;
+  if (p.y > BOT - PH / 2) { p.y = BOT - PH / 2; p.vy = 0; }
+  if (p.y < TOP + PH / 2) { p.y = TOP + PH / 2; p.vy = 0; }
+  setThrust(thrust);
+  if (thrust) {
+    flameT -= dt;
+    if (flameT <= 0) {
+      flameT = 0.02;
+      parts.push({ x: PX - 13, y: p.y + 16, vx: -v * 0.5 + rand(-30, 30), vy: rand(140, 260), life: 0.3, max: 0.3, col: pick(['#ffb02e', '#ff6a00', '#fff3b0']), size: rand(2, 4), g: 0 });
+    }
+  }
+  for (const k in pupT) pupT[k] = Math.max(0, pupT[k] - dt);
+  p.inv = Math.max(0, p.inv - dt);
+
+  /* spawning */
+  const spawning = run.endless || run.dist < run.lengthPx - (W - PX) - 200;
+  run.sinceSpawn += dx;
+  if (spawning && run.sinceSpawn >= run.gap) {
+    run.sinceSpawn = 0;
+    spawnObstacle();
+    const mid = W + 90 + run.gap / 2;
+    if (Math.random() < 0.08) spawnPup(mid); else spawnCoins(mid);
+  }
+  if (cfg.missiles && spawning) {
+    run.missileT -= dt;
+    if (run.missileT <= 0) {
+      warns.push({ y: p.y, t: 1.3 });
+      run.missileT = rand(cfg.mMin, cfg.mMax);
+    }
+  }
+
+  /* missile warnings -> missiles */
+  warnBeep -= dt;
+  for (const w of warns) {
+    w.t -= dt;
+    if (w.t > 0.5) w.y += (p.y - w.y) * Math.min(1, dt * 6);
+    if (warnBeep <= 0) { SFX.warn(); warnBeep = w.t < 0.5 ? 0.08 : 0.22; }
+    if (w.t <= 0) { missiles.push({ x: W + 30, y: w.y }); w.dead = true; SFX.launch(); }
+  }
+  warns = warns.filter(w => !w.dead);
+  for (const m of missiles) {
+    m.x -= (v + 520 * slow) * dt;
+    if (Math.random() < 0.6 && parts.length < 450) parts.push({ x: m.x + 16, y: m.y + rand(-2, 2), vx: rand(40, 90), vy: rand(-20, 20), life: 0.35, max: 0.35, col: pick(['#ffb02e', '#bbb', '#777']), size: rand(2, 4), g: 0 });
+    if (Math.hypot(m.x - PX, m.y - p.y) < PR + 8) { m.dead = true; burst(m.x, m.y, '#ffb02e', 20); hit(); }
+    if (m.x < -80) m.dead = true;
+  }
+  missiles = missiles.filter(m => !m.dead);
+
+  /* lasers */
+  for (const o of obstacles) {
+    o.x -= dx;
+    if (o.spin) o.ang += o.spin * dt * slow;
+    if (o.amp) o.cy = o.baseY + Math.sin(T * o.wspd + o.ph) * o.amp;
+    if (Math.abs(o.x - PX) < o.len / 2 + 30) {
+      const s = segOf(o);
+      if (distToSeg(PX, p.y, s[0], s[1], s[2], s[3]) < PR + 3) hit();
+    }
+  }
+  obstacles = obstacles.filter(o => o.x > -260);
+
+  /* coins */
+  const pullR = pupT.magnet > 0 ? 280 : [0, 45, 75, 105][save.upg.mag] || 0;
+  const coinVal = 1 + save.upg.val;
+  for (const c of coins) {
+    c.x -= dx;
+    const ddx = PX - c.x, ddy = p.y - c.y, d = Math.hypot(ddx, ddy);
+    if (pullR && d < pullR && d > 1) { const sp = 900 * dt; c.x += ddx / d * Math.min(sp, d); c.y += ddy / d * Math.min(sp, d); }
+    if (d < PR + 11) {
+      c.dead = true; run.coins++; run.wallet += coinVal; run.score += 10 * mult;
+      SFX.coin();
+      if (parts.length < 450) parts.push({ x: c.x, y: c.y, vx: 0, vy: -60, life: 0.3, max: 0.3, col: '#fff3a0', size: 3, g: 0 });
+    }
+    if (c.x < -30) c.dead = true;
+  }
+  coins = coins.filter(c => !c.dead);
+
+  /* powerups */
+  const dur = 5 + save.upg.dur;
+  for (const u of pups) {
+    u.x -= dx;
+    const uy = u.y + Math.sin(T * 3 + u.ph) * 10;
+    if (Math.hypot(PX - u.x, p.y - uy) < PR + 17) {
+      u.dead = true;
+      if (u.type === 'shield') p.shield = true; else pupT[u.type] = dur;
+      burst(u.x, uy, PUPS[u.type].c, 18, 200);
+      SFX.pup();
+    }
+    if (u.x < -40) u.dead = true;
+  }
+  pups = pups.filter(u => !u.dead);
+
+  /* finish */
+  if (!run.endless && run.dist >= run.lengthPx) levelDone();
+}
+function updateParticles(dt) {
+  for (const q of parts) {
+    q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += (q.g || 0) * dt;
+  }
+  parts = parts.filter(q => q.life > 0);
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function render() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+  const sh = shakeT > 0 ? shakeT / 0.45 * 7 : 0;
+  ctx.setTransform(scale, 0, 0, scale, rand(-sh, sh) * scale, offY + rand(-sh, sh) * scale);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+
+  const th = curTheme();
+  const cam = run ? run.dist : attractDist;
+
+  // sky
+  const g = ctx.createLinearGradient(0, TOP, 0, BOT);
+  g.addColorStop(0, th.sky[0]); g.addColorStop(1, th.sky[1]);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // stars
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  const SW = W + 10;
+  for (const s of stars) {
+    const x = ((s.x * SW - cam * s.d) % SW + SW) % SW;
+    ctx.fillRect(x, s.y, s.s, s.s);
+  }
+  // skyline
+  const off = (cam * 0.25) % SKY_W;
+  for (let k = 0; k < 3; k++) {
+    for (const b of blds) {
+      const bx = b.x - off + k * SKY_W;
+      if (bx > W || bx + b.w < 0) continue;
+      ctx.fillStyle = 'rgba(0,0,0,0.38)';
+      ctx.fillRect(bx, BOT - b.h, b.w, b.h);
+      if (b.win) {
+        ctx.fillStyle = th.accent; ctx.globalAlpha = 0.18;
+        for (let wy = BOT - b.h + 10; wy < BOT - 10; wy += 16) for (let wx = bx + 8; wx < bx + b.w - 8; wx += 14) ctx.fillRect(wx, wy, 5, 7);
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+  // ceiling / floor
+  ctx.fillStyle = th.ground;
+  ctx.fillRect(0, 0, W, TOP); ctx.fillRect(0, BOT, W, H - BOT);
+  ctx.fillStyle = th.accent; ctx.globalAlpha = 0.45;
+  for (let x = -(cam % 48); x < W; x += 48) { ctx.fillRect(x, BOT + 8, 24, 4); ctx.fillRect(x, TOP - 12, 24, 4); }
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = th.accent;
+  ctx.fillRect(0, TOP - 2, W, 2); ctx.fillRect(0, BOT, W, 2);
+
+  if (run) {
+    // best-distance ghost line
+    const bestPx = run.bestAtStart * 10;
+    if (bestPx > 0 && bestPx < run.lengthPx) {
+      const bx = bestPx - run.dist + PX;
+      if (bx > -10 && bx < W + 10) {
+        ctx.strokeStyle = 'rgba(255,46,136,0.8)'; ctx.lineWidth = 2; ctx.setLineDash([8, 8]);
+        ctx.beginPath(); ctx.moveTo(bx, TOP); ctx.lineTo(bx, BOT); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#ff2e88'; ctx.font = '9px "Press Start 2P", monospace'; ctx.textAlign = 'center';
+        ctx.fillText('BEST', bx, TOP + 16);
+      }
+    }
+    // finish gate
+    if (!run.endless) {
+      const gx = run.lengthPx - run.dist + PX;
+      if (gx < W + 40) {
+        for (let y = TOP, i = 0; y < BOT; y += 16, i++) {
+          ctx.fillStyle = i % 2 ? '#fff' : '#111'; ctx.fillRect(gx, y, 8, 16);
+          ctx.fillStyle = i % 2 ? '#111' : '#fff'; ctx.fillRect(gx + 8, y, 8, 16);
+        }
+        ctx.fillStyle = '#ffe14d'; ctx.font = '12px "Press Start 2P", monospace'; ctx.textAlign = 'center';
+        ctx.fillText('FINISH', gx + 8, TOP + 26);
+      }
+    }
+    drawCoins(); drawPups(); drawLasers(); drawMissiles(); drawWarns(); drawPlayer();
+  }
+  // particles
+  for (const q of parts) {
+    ctx.globalAlpha = clamp(q.life / q.max, 0, 1);
+    ctx.fillStyle = q.col; ctx.fillRect(q.x - q.size / 2, q.y - q.size / 2, q.size, q.size);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+function drawCoins() {
+  for (const c of coins) {
+    if (c.x < -20 || c.x > W + 20) continue;
+    const sx = Math.max(0.25, Math.abs(Math.cos(T * 5 + c.x * 0.03)));
+    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(sx, 1);
+    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(0, 0, 9, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff3a0'; ctx.fillRect(-2, -5, 3, 7);
+    ctx.restore();
+  }
+}
+function drawPups() {
+  ctx.font = '10px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const u of pups) {
+    const P = PUPS[u.type], y = u.y + Math.sin(T * 3 + u.ph) * 10;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.arc(u.x, y, 16, 0, TAU); ctx.fill();
+    ctx.strokeStyle = P.c; ctx.lineWidth = 3; ctx.shadowColor = P.c; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.arc(u.x, y, 16, 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.fillStyle = P.c; ctx.fillText(P.l, u.x, y + 1);
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+function drawLasers() {
+  ctx.lineCap = 'round';
+  for (const o of obstacles) {
+    if (o.x < -o.len || o.x > W + o.len) continue;
+    const [x1, y1, x2, y2] = segOf(o);
+    const fl = 0.75 + Math.random() * 0.25;
+    ctx.strokeStyle = `rgba(255,40,80,${0.25 * fl})`; ctx.lineWidth = 16;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.strokeStyle = '#ff2a4d'; ctx.lineWidth = 6; ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    for (const [ex, ey] of [[x1, y1], [x2, y2]]) {
+      ctx.fillStyle = '#3a3f4b'; ctx.beginPath(); ctx.arc(ex, ey, 9, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#ff2a4d'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ex, ey, 3, 0, TAU); ctx.fill();
+    }
+  }
+  ctx.lineCap = 'butt';
+}
+function drawMissiles() {
+  for (const m of missiles) {
+    ctx.fillStyle = '#ff6a00'; ctx.beginPath(); ctx.moveTo(m.x + 14, m.y - 4); ctx.lineTo(m.x + 26 + Math.random() * 12, m.y); ctx.lineTo(m.x + 14, m.y + 4); ctx.fill();
+    ctx.fillStyle = '#d0d4dc'; ctx.fillRect(m.x - 14, m.y - 5, 28, 10);
+    ctx.fillStyle = '#ff2a4d'; ctx.beginPath(); ctx.moveTo(m.x - 14, m.y - 5); ctx.lineTo(m.x - 24, m.y); ctx.lineTo(m.x - 14, m.y + 5); ctx.fill();
+    ctx.fillStyle = '#7a7f8c'; ctx.fillRect(m.x + 8, m.y - 9, 6, 4); ctx.fillRect(m.x + 8, m.y + 5, 6, 4);
+  }
+}
+function drawWarns() {
+  ctx.font = '14px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const w of warns) {
+    const on = Math.floor(T * (w.t < 0.5 ? 16 : 7)) % 2 === 0;
+    const x = W - 30;
+    ctx.fillStyle = on ? '#ff2a4d' : 'rgba(255,42,77,0.35)';
+    ctx.beginPath(); ctx.moveTo(x, w.y - 16); ctx.lineTo(x + 16, w.y + 12); ctx.lineTo(x - 16, w.y + 12); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillText('!', x, w.y + 3);
+    if (w.t < 0.5) {
+      ctx.strokeStyle = 'rgba(255,42,77,0.35)'; ctx.lineWidth = 1; ctx.setLineDash([4, 6]);
+      ctx.beginPath(); ctx.moveTo(PX + 30, w.y); ctx.lineTo(x - 20, w.y); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+function drawPlayer() {
+  if (state === 'dead') return;
+  const blink = p.inv > 0 && Math.floor(T * 20) % 2 === 0;
+  if (!blink) {
+    ctx.save(); ctx.translate(PX, p.y); ctx.rotate(clamp(p.vy * 0.0007, -0.35, 0.35));
+    if (input.down && state === 'play') {
+      const fl = 14 + Math.random() * 14;
+      ctx.fillStyle = '#ffb02e'; ctx.beginPath(); ctx.moveTo(-18, 12); ctx.lineTo(-8, 12); ctx.lineTo(-13, 12 + fl); ctx.fill();
+      ctx.fillStyle = '#fff3b0'; ctx.beginPath(); ctx.moveTo(-16, 12); ctx.lineTo(-10, 12); ctx.lineTo(-13, 12 + fl * 0.55); ctx.fill();
+    }
+    ctx.fillStyle = '#8a8f9c'; ctx.fillRect(-20, -12, 11, 24);
+    ctx.fillStyle = '#ff2e88'; ctx.fillRect(-20, -6, 11, 4);
+    ctx.fillStyle = '#5b606c'; ctx.fillRect(-18, 12, 8, 3);
+    ctx.fillStyle = '#ffcc33'; ctx.fillRect(-9, -8, 18, 22);
+    ctx.fillStyle = '#e0a800'; ctx.fillRect(-9, 8, 18, 6);
+    ctx.fillStyle = '#2b2f3a'; ctx.fillRect(-8, 14, 6, 6); ctx.fillRect(2, 14, 6, 6);
+    ctx.fillStyle = '#f2f2f2'; ctx.beginPath(); ctx.arc(0, -14, 10, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#1b9cff'; ctx.fillRect(1, -18, 9, 7);
+    ctx.fillStyle = '#bfe6ff'; ctx.fillRect(3, -17, 3, 2);
+    ctx.restore();
+  }
+  if (p.shield) {
+    ctx.fillStyle = 'rgba(125,249,255,0.12)'; ctx.strokeStyle = 'rgba(125,249,255,0.85)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(PX, p.y, 27 + Math.sin(T * 6) * 1.5, 0, TAU); ctx.fill(); ctx.stroke();
+  }
+}
+
+/* =========================================================
+   HUD / MENUS
+   ========================================================= */
+const hud = { score: $('hScore'), coins: $('hCoins'), name: $('lvlname'), fill: $('progfill'), ghost: $('ghost'), dist: $('dist'), pups: $('pups') };
+function updateHud() {
+  if (!run) return;
+  const th = curTheme(), m = Math.floor(run.dist / 10);
+  setText(hud.score, Math.floor(run.score).toLocaleString());
+  setText(hud.coins, run.coins);
+  if (run.endless) {
+    setText(hud.name, 'ENDLESS &middot; ' + th.name);
+    setText(hud.dist, m + 'm &nbsp; BEST ' + Math.max(save.endlessBest, 0) + 'm');
+  } else {
+    setText(hud.name, 'LEVEL ' + run.n + ' &middot; ' + th.name);
+    setText(hud.dist, Math.min(m, cfg.length) + ' / ' + cfg.length + 'm');
+    const pct = Math.min(100, run.dist / run.lengthPx * 100).toFixed(1) + '%';
+    if (hud.fill._w !== pct) { hud.fill._w = pct; hud.fill.style.width = pct; }
+    const b = run.bestAtStart;
+    if (b > 0 && b < cfg.length) { hud.ghost.style.display = 'block'; hud.ghost.style.left = (b / cfg.length * 100) + '%'; }
+    else hud.ghost.style.display = 'none';
+  }
+  let chips = '';
+  if (p.shield) chips += `<span class="chip" style="border-color:${PUPS.shield.c};color:${PUPS.shield.c}">SHIELD</span>`;
+  for (const k of ['magnet', 'slowmo', 'x2']) {
+    if (pupT[k] > 0) chips += `<span class="chip" style="border-color:${PUPS[k].c};color:${PUPS[k].c}">${PUPS[k].name} ${Math.ceil(pupT[k])}</span>`;
+  }
+  setText(hud.pups, chips);
+}
+const SCREENS = ['menu', 'shop', 'pause', 'over', 'done'];
+function showScreen(id) { SCREENS.forEach(s => $(s).classList.toggle('hidden', s !== id)); }
+function renderMenu() {
+  setText($('mWallet'), save.coins.toLocaleString());
+  setText($('mHigh'), save.highScore.toLocaleString());
+  const grid = $('levelGrid');
+  let html = '';
+  for (let n = 1; n <= 10; n++) {
+    const locked = n > save.unlocked, done = n < save.unlocked;
+    const best = save.levelDist[String(n)] || 0;
+    const cls = done ? 'done' : (n === save.unlocked ? 'next' : '');
+    const sub = locked ? 'LOCKED' : done ? 'CLEAR' : (best ? best + 'm' : 'NEW');
+    html += `<button class="lv ${cls}" data-lv="${n}" ${locked ? 'disabled' : ''}>${n}<small>${sub}</small></button>`;
+  }
+  grid.innerHTML = html;
+  const endlessOpen = save.unlocked > 10;
+  $('endlessBtn').disabled = !endlessOpen;
+  setText($('endlessBtn'), endlessOpen ? 'ENDLESS' + (save.endlessBest ? ' (' + save.endlessBest + 'm)' : '') : 'ENDLESS (BEAT LVL 10)');
+  setText($('playBtn'), endlessOpen ? 'PLAY ENDLESS' : 'PLAY LEVEL ' + save.unlocked);
+  $('migrated').classList.toggle('hidden', !migratedFromOld);
+  applyMute();
+}
+function renderShop() {
+  setText($('sWallet'), save.coins.toLocaleString());
+  $('upgList').innerHTML = UPGS.map(u => {
+    const l = save.upg[u.id] || 0, maxed = l >= u.max, cost = maxed ? 0 : u.costs[l];
+    return `<div class="upg"><div><div class="n">${u.name}</div><div class="d">${u.desc}</div>` +
+      `<div class="pips">${'&#9632;'.repeat(l)}${'&#9633;'.repeat(u.max - l)}</div></div>` +
+      `<button class="btn" data-u="${u.id}" ${maxed || save.coins < cost ? 'disabled' : ''}>${maxed ? 'MAXED' : cost + ' COINS'}</button></div>`;
+  }).join('');
+}
+function openShop() { audio(); SFX.click(); state = 'shop'; renderShop(); showScreen('shop'); }
+
+$('levelGrid').addEventListener('click', e => { const b = e.target.closest('[data-lv]'); if (b && !b.disabled) startRun(+b.dataset.lv); });
+$('playBtn').addEventListener('click', () => startRun(save.unlocked > 10 ? ENDLESS : save.unlocked));
+$('endlessBtn').addEventListener('click', () => { if (save.unlocked > 10) startRun(ENDLESS); });
+$('shopBtn').addEventListener('click', openShop);
+$('overShop').addEventListener('click', openShop);
+$('doneShop').addEventListener('click', openShop);
+$('shopBack').addEventListener('click', () => { SFX.click(); state = 'menu'; run = null; renderMenu(); showScreen('menu'); });
+$('upgList').addEventListener('click', e => {
+  const b = e.target.closest('[data-u]'); if (!b || b.disabled) return;
+  const u = UPGS.find(x => x.id === b.dataset.u), l = save.upg[u.id] || 0;
+  if (l >= u.max || save.coins < u.costs[l]) return;
+  save.coins -= u.costs[l]; save.upg[u.id] = l + 1; persist(); SFX.pup(); renderShop();
+});
+$('muteBtn').addEventListener('click', () => { audio(); save.muted = !save.muted; persist(); applyMute(); });
+$('resumeBtn').addEventListener('click', resumeGame);
+$('quitBtn').addEventListener('click', quitToMenu);
+$('retryBtn').addEventListener('click', () => startRun(run ? run.n : save.unlocked));
+$('overMenu').addEventListener('click', () => { run = null; state = 'menu'; renderMenu(); showScreen('menu'); });
+$('doneMenu').addEventListener('click', () => { run = null; state = 'menu'; renderMenu(); showScreen('menu'); });
+$('nextBtn').addEventListener('click', () => startRun(run && run.n < 10 ? run.n + 1 : ENDLESS));
+$('pauseBtn').addEventListener('click', e => { e.stopPropagation(); pauseGame(); });
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+const FLY_KEYS = ['Space', 'ArrowUp', 'KeyW'];
+document.addEventListener('keydown', e => {
+  if (FLY_KEYS.includes(e.code)) {
+    e.preventDefault();
+    if (state === 'play') { audio(); input.key = true; }
+    return;
+  }
+  if (e.code === 'KeyP' || e.code === 'Escape') { if (state === 'play') pauseGame(); else if (state === 'pause') resumeGame(); }
+  else if (e.code === 'KeyM') { save.muted = !save.muted; persist(); applyMute(); }
+  else if (e.code === 'Enter') {
+    if (state === 'menu') $('playBtn').click();
+    else if (state === 'over') $('retryBtn').click();
+    else if (state === 'done') $('nextBtn').click();
+    else if (state === 'pause') resumeGame();
+  }
+});
+document.addEventListener('keyup', e => { if (FLY_KEYS.includes(e.code)) input.key = false; });
+window.addEventListener('pointerdown', e => {
+  if (state !== 'play') return;
+  if (e.target.closest && e.target.closest('button, a')) return;
+  audio(); pointers.add(e.pointerId);
+  if (e.cancelable) e.preventDefault();
+}, { passive: false });
+const endPtr = e => pointers.delete(e.pointerId);
+window.addEventListener('pointerup', endPtr);
+window.addEventListener('pointercancel', endPtr);
+window.addEventListener('blur', () => { pointers.clear(); input.key = false; pauseGame(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+document.addEventListener('contextmenu', e => { if (state === 'play') e.preventDefault(); });
+
+/* =========================================================
+   LOOP
+   ========================================================= */
+let last = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame);
+  let dt = (now - last) / 1000; last = now;
+  if (dt > 0.1) dt = 0.1;
+  if (dt < 0) dt = 0;
+  if (!frozen) advance(dt * timeScale);
+  render();
+  updateHud();
+}
+
+if (/[?&]debug\b/.test(location.search)) {
+  window.__jp = {
+    get state() { return state; }, get run() { return run; }, get save() { return save; }, get cfg() { return cfg; },
+    p, input, get obstacles() { return obstacles; },
+    set god(v) { god = v; }, set timeScale(v) { timeScale = v; }, set frozen(v) { frozen = v; },
+    step(dt, n) { for (let i = 0; i < n; i++) advance(dt); }, start: startRun, reset() { acc = 0; }
+  };
+}
+
+resize();
+renderMenu();
+requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
